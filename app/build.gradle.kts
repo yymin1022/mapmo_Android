@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.gms.google.services)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -62,6 +63,9 @@ dependencies {
     // Hile Dependency
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Firebase Dependency
+    implementation(platform(libs.firebase.bom))
 
     // Debug Dependency
     debugImplementation(libs.androidx.ui.test.manifest)
