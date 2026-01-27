@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.gms.google.services)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
@@ -66,6 +67,8 @@ dependencies {
 
     // Firebase Dependency
     implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
 
     // Debug Dependency
     debugImplementation(libs.androidx.ui.test.manifest)
