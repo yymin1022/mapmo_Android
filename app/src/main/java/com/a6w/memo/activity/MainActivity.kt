@@ -7,9 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.a6w.memo.navigation.MapmoNavHost
 import com.a6w.memo.ui.theme.LocationMemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,24 +25,17 @@ class MainActivity: ComponentActivity() {
                     modifier = Modifier
                         .fillMaxSize(),
                 ) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    val navController = rememberNavController()
+
+                    // Mapmo Nav Host
+                    MapmoNavHost(
                         modifier = Modifier
-                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .padding(paddingValues = innerPadding),
+                        navController = navController,
                     )
                 }
             }
         }
     }
-}
-
-@Composable
-fun Greeting(
-    modifier: Modifier = Modifier,
-    name: String,
-) {
-    Text(
-        modifier = modifier,
-        text = "Hello $name!",
-    )
 }
