@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.a6w.memo.route.home.HomeScreen
 import com.a6w.memo.route.mapmo.MapmoScreen
+import com.a6w.memo.route.setting.SettingScreen
 
 /**
  * Mapmo Nav Host
@@ -38,6 +39,14 @@ fun MapmoNavHost(
                 navigationPop = { navController.popBackStack() },
             )
         }
+
+        // Setting
+        composable<MapmoNavRoute.Setting> {
+            SettingScreenNav(
+                modifier = Modifier,
+                navigationPop = { navController.popBackStack() },
+            )
+        }
     }
 }
 
@@ -61,6 +70,20 @@ private fun MapmoScreenNav(
 ) {
     // Mapmo Screen
     MapmoScreen(
+        modifier = modifier
+            .fillMaxSize(),
+        navigationPop = navigationPop,
+    )
+}
+
+// Setting Screen Nav
+@Composable
+private fun SettingScreenNav(
+    modifier: Modifier = Modifier,
+    navigationPop: () -> Unit,
+) {
+    // Setting Screen
+    SettingScreen(
         modifier = modifier
             .fillMaxSize(),
         navigationPop = navigationPop,
