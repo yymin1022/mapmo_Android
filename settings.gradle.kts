@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Location Memo"
 include(":app")
 include(":domain")
+include(":data")
