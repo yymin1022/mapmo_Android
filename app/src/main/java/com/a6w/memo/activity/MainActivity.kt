@@ -1,4 +1,4 @@
-package com.a6w.memo
+package com.a6w.memo.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
