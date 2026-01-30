@@ -13,4 +13,8 @@ sealed interface MapmoNavRoute {
     // Home
     @Serializable
     data object Home: MapmoNavRoute
+
+    // Mapmo
+    @Serializable
+    data object Mapmo: MapmoNavRoute
 }

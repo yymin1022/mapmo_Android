@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.a6w.memo.route.home.HomeScreen
+import com.a6w.memo.route.mapmo.MapmoScreen
 
 /**
  * Mapmo Nav Host
@@ -29,6 +30,14 @@ fun MapmoNavHost(
                 modifier = Modifier,
             )
         }
+
+        // Mapmo
+        composable<MapmoNavRoute.Mapmo> {
+            MapmoScreenNav(
+                modifier = Modifier,
+                navigationPop = { navController.popBackStack() },
+            )
+        }
     }
 }
 
@@ -41,5 +50,19 @@ private fun HomeScreenNav(
     HomeScreen(
         modifier = modifier
             .fillMaxSize(),
+    )
+}
+
+// Mapmo Screen Nav
+@Composable
+private fun MapmoScreenNav(
+    modifier: Modifier = Modifier,
+    navigationPop: () -> Unit,
+) {
+    // Mapmo Screen
+    MapmoScreen(
+        modifier = modifier
+            .fillMaxSize(),
+        navigationPop = navigationPop,
     )
 }
