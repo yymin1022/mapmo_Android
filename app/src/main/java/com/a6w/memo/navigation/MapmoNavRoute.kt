@@ -10,8 +10,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 sealed interface MapmoNavRoute {
-    // TODO: Define nav routes for each screen
-    //       DummyRoute is dummy as its name represents
+    // Home
     @Serializable
-    data object DummyRoute: MapmoNavRoute
+    data object Home: MapmoNavRoute
 }
