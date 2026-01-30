@@ -29,6 +29,8 @@ fun MapmoNavHost(
         composable<MapmoNavRoute.Home> {
             HomeScreenNav(
                 modifier = Modifier,
+                navigateToMapmo = { navController.navigate(MapmoNavRoute.Mapmo) },
+                navigateToSetting = { navController.navigate(MapmoNavRoute.Setting) },
             )
         }
 
@@ -54,11 +56,15 @@ fun MapmoNavHost(
 @Composable
 private fun HomeScreenNav(
     modifier: Modifier = Modifier,
+    navigateToMapmo: () -> Unit,
+    navigateToSetting: () -> Unit,
 ) {
     // Home Screen
     HomeScreen(
         modifier = modifier
             .fillMaxSize(),
+        navigateToMapmo = navigateToMapmo,
+        navigateToSetting = navigateToSetting,
     )
 }
 
