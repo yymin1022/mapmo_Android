@@ -70,6 +70,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // Kakao Map
+    implementation(libs.kakao.map)
+
     // Firebase Dependency
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
