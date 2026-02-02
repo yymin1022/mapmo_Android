@@ -74,6 +74,9 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":domain"))
 
+    // Kakao Map
+    implementation(libs.kakao.map)
+
     // Firebase Dependency
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
