@@ -33,11 +33,11 @@ fun KakaoMapView(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // KakaoMap View Instance
-    val mapView = remember { MapView(context) }
     // KakaoMap Instance
     // - Initialized when MapView is Ready
     var kakaoMap by remember { mutableStateOf<KakaoMap?>(null) }
+    // KakaoMap View Instance
+    val mapView = remember { MapView(context) }
 
     DisposableEffect(lifecycleOwner, mapView) {
         // Lifecycle Observer
