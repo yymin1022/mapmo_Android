@@ -28,6 +28,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Kakao Map Native Key
+        buildConfigField("String", "KAKAO_MAP_NATIVE_KEY", "${localProperties["KAKAO_MAP_NATIVE_KEY"]}")
     }
 
     buildTypes {
