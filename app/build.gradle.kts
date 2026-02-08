@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // Project Dependency
+    implementation(project(":data"))
+    implementation(project(":domain"))
+
     // Firebase Dependency
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
