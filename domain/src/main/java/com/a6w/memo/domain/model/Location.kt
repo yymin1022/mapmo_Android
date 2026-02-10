@@ -6,7 +6,7 @@ package com.a6w.memo.domain.model
  */
 data class Location(
     // Latitude
-    val lat : Double,
+    val lat: Double,
     // Longitude
-    val lng : Double,
+    val lng: Double,
 )
