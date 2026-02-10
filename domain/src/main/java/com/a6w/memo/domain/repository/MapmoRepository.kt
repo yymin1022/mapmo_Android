@@ -8,9 +8,9 @@ import com.a6w.memo.domain.model.Mapmo
  */
 interface MapmoRepository {
     // Add a new Mapmo
-    suspend fun addMapmo(mapmoContent : Mapmo, userID: String): Boolean
+    suspend fun addMapmo(mapmoContent: Mapmo, userID: String): Boolean
     // Update Mapmo information
     suspend fun updateMapmo(mapmoContent: Mapmo, userID: String): Boolean
     // Retrieve Mapmo detailed information
-    suspend fun getMapmo(mapmoID : String, userID:String): Mapmo?
+    suspend fun getMapmo(mapmoID: String, userID: String): Mapmo?
 }
