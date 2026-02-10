@@ -1,5 +1,6 @@
 package com.a6w.memo.data.repository
 
+import com.a6w.memo.data.firebase.FirestoreKey
 import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.Location
 import com.a6w.memo.domain.model.Mapmo
@@ -13,34 +14,32 @@ import kotlinx.coroutines.tasks.await
  * MapmoListRepositoryImpl
  *
  * - Fetches MapmoList data from Firestore
+ *
+ * Responsibilities:
+ * - Fetch all Mapmo documents for a specific user
+ * - Fetch all Label documents for the same user
+ * - Group Mapmo items by labelID
+ * - Build and return a MapmoList domain model
+ *
  */
 class MapmoListRepositoryImpl: MapmoListRepository {
     private val db = FirebaseFirestore.getInstance()
-    // Firestore document field keys
-    companion object {
-        private const val DOCUMENT_KEY_COLOR = "color"
-        private const val DOCUMENT_KEY_NAME = "name"
-        private const val DOCUMENT_KEY_UPDATED_AT = "updatedAt"
-        private const val DOCUMENT_KEY_CONTENT = "content"
-        private const val DOCUMENT_KEY_USER_ID = "userID"
-        private const val DOCUMENT_KEY_LOCATION = "location"
-        private const val DOCUMENT_KEY_IS_NOTIFY_ENABLED = "isNotifyEnabled"
-        private const val DOCUMENT_KEY_LABEL_ID = "labelID"
-        private const val FIRESTORE_KEY_COLLECTION_LABEL = "label"
-        private const val FIRESTORE_KEY_COLLECTION_MAPMO = "mapmo"
-    }
-    override suspend fun getMapmoList(userID: String): MapmoList? {
+
+    override suspend fun getMapmoList(
+        userID: String,
+    ): MapmoList? {
         try {
             // Fetch all mapmo documents that belong to the given userID
-            val snapshot = db.collection(FIRESTORE_KEY_COLLECTION_MAPMO)
-                .whereEqualTo(DOCUMENT_KEY_USER_ID, userID)
+            val snapshot = db.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+                .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
 
             // Convert Firestore documents into a list of Mapmo objects
             val mapmoList = snapshot.documents.mapNotNull { document ->
                 // Skip if GeoPoint is missing (invalid Mapmo data)
-                val geoPoint = document.getGeoPoint(DOCUMENT_KEY_LOCATION) ?: return@mapNotNull null
+                val geoPoint = document.getGeoPoint(FirestoreKey.DOCUMENT_KEY_LOCATION)
+                    ?: return@mapNotNull null
 
                 // Location Lat/Lng Info
                 val mapmoLat = geoPoint.latitude
@@ -54,10 +53,12 @@ class MapmoListRepositoryImpl: MapmoListRepository {
 
                 // Only create Mapmo if location exists
                 val mapmoID = document.id
-                val content = document.getString(DOCUMENT_KEY_CONTENT) ?: ""
-                val isNotifyEnabled = document.getBoolean(DOCUMENT_KEY_IS_NOTIFY_ENABLED) ?: false
-                val labelID = document.getString(DOCUMENT_KEY_LABEL_ID) // nullable
-                val updatedAt = document.getTimestamp(DOCUMENT_KEY_UPDATED_AT)?.seconds ?: 0
+                val content = document.getString(FirestoreKey.DOCUMENT_KEY_CONTENT) ?: ""
+                val isNotifyEnabled =
+                    document.getBoolean(FirestoreKey.DOCUMENT_KEY_IS_NOTIFY_ENABLED) ?: false
+                val labelID = document.getString(FirestoreKey.DOCUMENT_KEY_LABEL_ID) // nullable
+                val updatedAt =
+                    document.getTimestamp(FirestoreKey.DOCUMENT_KEY_UPDATED_AT)?.seconds ?: 0
                 // Mapmo Data
                 Mapmo(
                     mapmoID = mapmoID,
@@ -70,14 +71,15 @@ class MapmoListRepositoryImpl: MapmoListRepository {
             }
 
             // Fetch all label documents for the user
-            val labelSnapshot = db.collection(FIRESTORE_KEY_COLLECTION_LABEL)
-                .whereEqualTo(DOCUMENT_KEY_USER_ID, userID)
+            val labelSnapshot = db.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+                .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
 
             // Convert Firestore documents into Label objects
             val labels = labelSnapshot.documents.mapNotNull { document ->
-                val geoPoint = document.getGeoPoint(DOCUMENT_KEY_LOCATION) ?: return@mapNotNull null
+                val geoPoint = document.getGeoPoint(FirestoreKey.DOCUMENT_KEY_LOCATION)
+                    ?: return@mapNotNull null
 
                 // Location Lat/Lng Info
                 val labelLat = geoPoint.latitude
@@ -91,8 +93,8 @@ class MapmoListRepositoryImpl: MapmoListRepository {
 
                 // Only create Label if location exists
                 val id = document.id
-                val name =  document.getString(DOCUMENT_KEY_COLOR) ?: ""
-                val color =  document.getString(DOCUMENT_KEY_NAME) ?: ""
+                val name = document.getString(FirestoreKey.DOCUMENT_KEY_COLOR) ?: ""
+                val color = document.getString(FirestoreKey.DOCUMENT_KEY_NAME) ?: ""
 
                 // Label Data
                 Label(
@@ -123,11 +125,8 @@ class MapmoListRepositoryImpl: MapmoListRepository {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            // Return empty result if an error occurs
-            return MapmoList(
-                count = 0,
-                list = emptyList(),
-            )
+            // Return null if an error occurs
+            return null
         }
     }
 
