@@ -5,5 +5,5 @@ package com.a6w.memo.domain.model
  */
 data class LabelList(
     // list of Label
-    val list : List<Label>,
+    val list: List<Label>,
 )
