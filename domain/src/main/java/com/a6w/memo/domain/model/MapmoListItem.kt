@@ -7,7 +7,7 @@ package com.a6w.memo.domain.model
  */
 data class MapmoListItem(
     // Label info
-    val labelItem: Label,
+    val labelItem: Label? = null,
     // MapmoList
     val mapmoList: List<Mapmo>,
 )

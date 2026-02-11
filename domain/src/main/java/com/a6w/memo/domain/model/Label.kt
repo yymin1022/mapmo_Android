@@ -3,6 +3,7 @@ package com.a6w.memo.domain.model
 /**
  * Label model
  * - Label information for a user-selected location
+ *
  */
 data class Label(
     // label id
@@ -10,7 +11,7 @@ data class Label(
     // label name
     val name: String,
     // label icon color
-    val color :  String,
+    val color:  String,
     // location of label
-    val location : Location,
+    val location: Location,
 )

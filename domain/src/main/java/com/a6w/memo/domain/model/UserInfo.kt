@@ -5,9 +5,9 @@ package com.a6w.memo.domain.model
  */
 data class UserInfo(
     // user unique id
-    val id :String,
+    val id: String,
     // user-defined nickname
-    val nickName :String,
+    val nickName: String,
     // user creation date and time
-    val createdAt : Long,
+    val createdAt: Long,
 )
