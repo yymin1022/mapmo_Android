@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,13 +85,6 @@ fun KakaoMapView(
             override fun onMapReady(map: KakaoMap) {
                 Log.d("KakaoMapView", "onMapReady()")
                 kakaoMap = map
-
-                // Add Labels to Map
-                val labelManager = kakaoMap?.labelManager
-                labelManager?.let {
-                    Log.d("KakaoMapView", "Add Label: $markers")
-                    addMarkers(it, markers)
-                }
             }
         })
 
@@ -99,6 +93,17 @@ fun KakaoMapView(
             lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
             // Clean up MapView Instance
             mapView.finish()
+        }
+    }
+
+    // Launched Effect - Add Markers to Map
+    LaunchedEffect(kakaoMap, markers) {
+        if(kakaoMap == null || markers.isNullOrEmpty()) return@LaunchedEffect
+
+        val labelManager = kakaoMap?.labelManager
+        labelManager?.let {
+            Log.d("KakaoMapView", "Add Label: $markers")
+            addMarkers(it, markers)
         }
     }
 
