@@ -10,25 +10,38 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.a6w.memo.R
+import com.a6w.memo.common.model.KakaoMapMarker
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.LabelManager
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelTextBuilder
+import com.kakao.vectormap.label.LabelTextStyle
 import java.lang.Exception
 
 /**
  * Kakao Map View
  * - Render KakaoMap View Instance as Composable AndroidView
+ * - Map markers can be added with [KakaoMapMarker] data
  */
 @Composable
 fun KakaoMapView(
     modifier: Modifier = Modifier,
+    markers: List<KakaoMapMarker>? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -72,7 +85,12 @@ fun KakaoMapView(
                 Log.d("KakaoMapView", "onMapReady()")
                 kakaoMap = map
 
-                // TODO: Render Markers, or other sub components for map
+                // Add Labels to Map
+                val labelManager = kakaoMap?.labelManager
+                labelManager?.let {
+                    Log.d("KakaoMapView", "Add Label: $markers")
+                    addMarkers(it, markers)
+                }
             }
         })
 
@@ -96,3 +114,51 @@ fun KakaoMapView(
         )
     }
 }
+
+/**
+ * Add markers on KakaoMap View
+ */
+private fun addMarkers(
+    labelManager: LabelManager?,
+    markers: List<KakaoMapMarker>?,
+) {
+    labelManager?.layer?.let {
+        // Generate kakao map label style and cache it
+        val labelStyles = getKakaoMapLabelStyles()
+
+        // Add each marker infos as label on kakap map
+        markers?.forEach { markerInfo ->
+            // Marker infos
+            val markerLat = markerInfo.latitude.toDouble()
+            val markerLng = markerInfo.longitude.toDouble()
+            val markerTitle = markerInfo.markerTitle
+            // TODO: Implement OnClick Event
+            //    KakaoMap Label does not support onClick Event
+            val onMarkerClick = markerInfo.onClick
+
+            // Generate Label data based on marker info
+            val labelPosition = LatLng.from(markerLat, markerLng)
+            val labelText = LabelTextBuilder().setTexts(markerTitle)
+
+            // Setup Label Option
+            val labelOption = LabelOptions.from(labelPosition).apply {
+                setStyles(labelStyles)
+                setTexts(labelText)
+            }
+
+            // Add label to kakao map
+            it.addLabel(labelOption)
+        }
+    }
+}
+
+/**
+ * Get Kakao Map label style
+ * - Apply themed icon drawable
+ * - Apply text color / size
+ */
+private fun getKakaoMapLabelStyles() = LabelStyles.from(
+        LabelStyle
+            .from(R.drawable.map_label)
+            .setTextStyles(LabelTextStyle.from(32, Color.Black.toArgb()))
+    )
