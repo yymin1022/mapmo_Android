@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -10,6 +12,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
+
+val localProperties = Properties()
+localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "com.a6w.memo"
@@ -23,6 +28,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Kakao Map Native Key
+        buildConfigField("String", "KAKAO_MAP_NATIVE_KEY", "${localProperties["KAKAO_MAP_NATIVE_KEY"]}")
     }
 
     buildTypes {
@@ -41,6 +49,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -73,6 +82,9 @@ dependencies {
     // Project Dependency
     implementation(project(":data"))
     implementation(project(":domain"))
+
+    // Kakao Map
+    implementation(libs.kakao.map)
 
     // Firebase Dependency
     implementation(platform(libs.firebase.bom))
