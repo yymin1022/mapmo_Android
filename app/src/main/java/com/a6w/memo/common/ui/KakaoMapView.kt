@@ -19,6 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.a6w.memo.R
+import com.a6w.memo.common.model.KakaoMapCameraFocus
 import com.a6w.memo.common.model.KakaoMapMarker
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.kakao.vectormap.KakaoMap
@@ -26,6 +27,7 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelManager
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
@@ -42,6 +44,7 @@ import java.lang.Exception
 @Composable
 fun KakaoMapView(
     modifier: Modifier = Modifier,
+    cameraFocus: KakaoMapCameraFocus? = null,
     markers: List<KakaoMapMarker>? = null,
 ) {
     val context = LocalContext.current
@@ -94,6 +97,22 @@ fun KakaoMapView(
             // Clean up MapView Instance
             mapView.finish()
         }
+    }
+
+    // Launched Effect - Move camera focus
+    LaunchedEffect(kakaoMap, cameraFocus) {
+        // Return if kakao map instance or focus data is null
+        if(kakaoMap == null || cameraFocus == null) return@LaunchedEffect
+
+        // Get Latitude / Longitude data from focus data
+        val focusLat = cameraFocus.latitude.toDouble()
+        val focusLng = cameraFocus.longitude.toDouble()
+        // Generate CameraUpdate instance
+        val cameraUpdate = CameraUpdateFactory
+            .newCenterPosition(LatLng.from(focusLat, focusLng))
+
+        // Move map camera to CameraUpdate instance
+        kakaoMap?.moveCamera(cameraUpdate)
     }
 
     // Launched Effect - Add Markers to Map
