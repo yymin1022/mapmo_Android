@@ -23,14 +23,15 @@ import kotlinx.coroutines.tasks.await
  *
  */
 class MapmoListRepositoryImpl: MapmoListRepository {
-    private val db = FirebaseFirestore.getInstance()
-
+    private val firestoreDB = FirebaseFirestore.getInstance()
+    private val mapmoCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+    private val labelCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL)
     override suspend fun getMapmoList(
         userID: String,
     ): MapmoList? {
         try {
             // Fetch all mapmo documents that belong to the given userID
-            val snapshot = db.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+            val snapshot = mapmoCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
@@ -71,7 +72,7 @@ class MapmoListRepositoryImpl: MapmoListRepository {
             }
 
             // Fetch all label documents for the user
-            val labelSnapshot = db.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+            val labelSnapshot = labelCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
