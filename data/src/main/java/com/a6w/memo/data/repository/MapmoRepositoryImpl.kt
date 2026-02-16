@@ -22,8 +22,8 @@ import kotlinx.coroutines.tasks.await
  *
  */
 class MapmoRepositoryImpl: MapmoRepository {
-    val firestoreDB = FirebaseFirestore.getInstance()
-
+    private val firestoreDB = FirebaseFirestore.getInstance()
+    private val mapmoCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
     override suspend fun getMapmo(
         mapmoID: String,
         userID: String,
@@ -31,7 +31,7 @@ class MapmoRepositoryImpl: MapmoRepository {
         try {
             // Fetch mapmo by ID
             val document =
-                firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO).document(mapmoID).get()
+                mapmoCollection.document(mapmoID).get()
                     .await()
             // Check if the document exists
 
@@ -94,7 +94,7 @@ class MapmoRepositoryImpl: MapmoRepository {
             )
 
             // Add a new document to the mapmo collection
-            firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+            mapmoCollection
                 .add(mapmoData)
                 .await()
             return true
@@ -124,7 +124,7 @@ class MapmoRepositoryImpl: MapmoRepository {
             )
 
             // Update the existing mapmo document
-            firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+            mapmoCollection
                 .document(mapmoContent.mapmoID)
                 .update(mapmoData)
                 .await()
