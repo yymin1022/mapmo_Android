@@ -27,9 +27,18 @@ import kotlinx.coroutines.tasks.await
 class LabelRepositoryImpl: LabelRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val labelCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+
+    // In-memory cache for LabelList
+    private var labelListCache: LabelList? = null
+
+    // Individual Label cache keyed by labelID
+    private val labelCache = mutableMapOf<String, Label>()
+
     override suspend fun getLabelList(userID: String): LabelList? {
         try {
-
+            labelListCache?.let {
+                return it
+            }
             // Fetch all label documents that belong to the given userID
             val snapshot = labelCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
@@ -63,15 +72,23 @@ class LabelRepositoryImpl: LabelRepository {
                         id = labelID,
                         name = labelName,
                         color = labelColor,
-                        location = location
+                        location = location,
                     )
                 } else {
                     null
                 }
             }
-            return LabelList(
+            // Create a LabelList result object from fetched labels
+            val labelListResult = LabelList(
                 list = labels
             )
+            // Cache the full label list
+            labelListCache = labelListResult
+            // Populate individual label cache for quick lookup by ID
+            labels.forEach {
+                labelCache[it.id] = it
+            }
+            return labelListResult
         } catch (e: Exception) {
             e.printStackTrace()
             return null
@@ -113,12 +130,17 @@ class LabelRepositoryImpl: LabelRepository {
                 val labelName = document.getString(FirestoreKey.DOCUMENT_KEY_NAME) ?: ""
                 val labelColor = document.getString(FirestoreKey.DOCUMENT_KEY_COLOR) ?: ""
 
-                return Label(
+                // Create a Label result object from fetched label
+                val labelResult = Label(
                     id = labelID,
                     name = labelName,
                     color = labelColor,
                     location = location,
                 )
+
+                // Cache the label
+                labelCache[labelID] = labelResult
+                return labelResult
             } else {
                 return null
             }
@@ -145,9 +167,20 @@ class LabelRepositoryImpl: LabelRepository {
             )
 
             // Add a new label document
-            labelCollection
+            val addedLabelRef = labelCollection
                 .add(labelData)
                 .await()
+
+            val addedLabelID = addedLabelRef.id
+            val newLabel = labelContent.copy(id = addedLabelID)
+
+            // Update in-memory caches to keep local state consistent
+            labelCache[addedLabelID] = newLabel
+            labelListCache = labelListCache?.let {
+                LabelList(
+                    list = it.list + newLabel
+                )
+            }
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -175,6 +208,18 @@ class LabelRepositoryImpl: LabelRepository {
                 .document(labelContent.id)
                 .update(labelData)
                 .await()
+
+            // Update single label cache
+            labelCache[labelID] = labelContent
+
+            // Replace updated label in list cache (if exists)
+            labelListCache = labelListCache?.let { labelList ->
+                labelList.copy(
+                    list = labelList.list.map {
+                        if (it.id == labelID) labelContent else it
+                    }
+                )
+            }
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -203,6 +248,16 @@ class LabelRepositoryImpl: LabelRepository {
                 .document(labelID)
                 .delete()
                 .await()
+
+            // Remove from label cache
+            labelCache.remove(labelID)
+
+            // Remove label from list cache (if exists)
+            labelListCache = labelListCache?.let { labelList ->
+                labelList.copy(
+                    list = labelList.list.filter { it.id != labelID }
+                )
+            }
             return true
         } catch (e: Exception) {
             e.printStackTrace()
