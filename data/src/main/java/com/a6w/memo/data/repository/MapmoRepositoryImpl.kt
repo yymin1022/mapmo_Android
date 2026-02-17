@@ -19,11 +19,15 @@ import kotlinx.coroutines.tasks.await
  * - Fetch a single Mapmo by ID
  * - Add a new Mapmo
  * - Update an existing Mapmo
- *
+ * - Cache the mapmo Data
  */
 class MapmoRepositoryImpl: MapmoRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val mapmoCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+
+    // Individual Mapmo cache keyed by mapmoID
+    private val mapmoCache = mutableMapOf<String, Mapmo>()
+
     override suspend fun getMapmo(
         mapmoID: String,
         userID: String,
@@ -57,8 +61,9 @@ class MapmoRepositoryImpl: MapmoRepository {
             val timeStampUpdatedAt =
                 document.get(FirestoreKey.DOCUMENT_KEY_UPDATED_AT) as? Timestamp
             val updatedAt = timeStampUpdatedAt?.seconds ?: 0
-            // Mapmo Data
-            return Mapmo(
+
+            // Result Mapmo Data
+            val mapmoResult = Mapmo(
                 mapmoID = mapmoID,
                 content = content,
                 isNotifyEnabled = isNotifyEnabled,
@@ -67,6 +72,10 @@ class MapmoRepositoryImpl: MapmoRepository {
                 updatedAt = updatedAt,
             )
 
+            // Store in cache
+            mapmoCache[mapmoID] = mapmoResult
+
+            return mapmoResult
         } catch (e: Exception) {
             e.printStackTrace()
             return null
@@ -94,9 +103,15 @@ class MapmoRepositoryImpl: MapmoRepository {
             )
 
             // Add a new document to the mapmo collection
-            mapmoCollection
+            val addedMapmoRef = mapmoCollection
                 .add(mapmoData)
                 .await()
+
+            // Update cache with newly added Mapmo
+            val addedMapmoID = addedMapmoRef.id
+            val addedMapmo = mapmoContent.copy(mapmoID = addedMapmoID)
+            mapmoCache[addedMapmoID] = addedMapmo
+
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -128,6 +143,12 @@ class MapmoRepositoryImpl: MapmoRepository {
                 .document(mapmoContent.mapmoID)
                 .update(mapmoData)
                 .await()
+
+            // Update cache with modified Mapmo
+            mapmoCache[mapmoContent.mapmoID] = mapmoContent.copy(
+                updatedAt = updatedAt.seconds
+            )
+
             return true
         } catch (e: Exception) {
             e.printStackTrace()
