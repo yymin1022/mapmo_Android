@@ -20,12 +20,16 @@ import kotlinx.coroutines.tasks.await
  * - Fetch all Label documents for the same user
  * - Group Mapmo items by labelID
  * - Build and return a MapmoList domain model
- *
+ * - Cache the result to avoid redundant server calls
  */
-class MapmoListRepositoryImpl: MapmoListRepository {
+class MapmoListRepositoryImpl : MapmoListRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val mapmoCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
     private val labelCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+
+    // In-memory cache for MapmoList
+    private var mapmoListCache: MapmoList? = null
+
     override suspend fun getMapmoList(
         userID: String,
     ): MapmoList? {
@@ -118,12 +122,16 @@ class MapmoListRepositoryImpl: MapmoListRepository {
                 )
             }
 
-            // Return final MapmoList result
-            return MapmoList(
+            val mapmoListResult = MapmoList(
                 count = mapmoList.size,
                 list = listItem,
             )
 
+            // Store in cache
+            mapmoListCache = mapmoListResult
+
+            // Return final MapmoList result
+            return mapmoListResult
         } catch (e: Exception) {
             e.printStackTrace()
             // Return null if an error occurs
