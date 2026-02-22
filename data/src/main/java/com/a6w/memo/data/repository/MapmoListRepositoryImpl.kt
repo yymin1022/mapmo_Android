@@ -67,7 +67,7 @@ class MapmoListRepositoryImpl: MapmoListRepository {
                     document.getBoolean(FirestoreKey.DOCUMENT_KEY_IS_NOTIFY_ENABLED) ?: false
                 val labelID = document.getString(FirestoreKey.DOCUMENT_KEY_LABEL_ID) // nullable
                 val updatedAt =
-                    document.getTimestamp(FirestoreKey.DOCUMENT_KEY_UPDATED_AT)?.seconds ?: 0
+                    document.getTimestamp(FirestoreKey.DOCUMENT_KEY_UPDATED_AT)?.seconds ?: -1
                 // Mapmo Data
                 Mapmo(
                     mapmoID = mapmoID,
