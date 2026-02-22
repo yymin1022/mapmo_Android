@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.a6w.memo.route.home.HomeScreen
+import com.a6w.memo.route.home.ui.HomeScreen
 import com.a6w.memo.route.mapmo.MapmoScreen
 import com.a6w.memo.route.setting.SettingScreen
 

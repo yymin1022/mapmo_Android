@@ -1,4 +1,4 @@
-package com.a6w.memo.route.home
+package com.a6w.memo.route.home.viewmodel
 
 import androidx.lifecycle.ViewModel
 import javax.inject.Inject
