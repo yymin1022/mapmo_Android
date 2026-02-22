@@ -19,7 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.a6w.memo.R
-import com.a6w.memo.common.model.KakaoMapCameraFocus
+import com.a6w.memo.common.model.MapCameraFocusData
 import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.kakao.vectormap.KakaoMap
@@ -44,7 +44,7 @@ import java.lang.Exception
 @Composable
 fun KakaoMapView(
     modifier: Modifier = Modifier,
-    cameraFocus: KakaoMapCameraFocus? = null,
+    cameraFocus: MapCameraFocusData? = null,
     markers: List<MapMarkerData>? = null,
 ) {
     val context = LocalContext.current
