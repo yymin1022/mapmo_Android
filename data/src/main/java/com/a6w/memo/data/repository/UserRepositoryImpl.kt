@@ -43,15 +43,15 @@ class UserRepositoryImpl: UserRepository {
             // Extract timestamp and convert to seconds
             val timestampCreatedAt =
                 document.get(FirestoreKey.DOCUMENT_KEY_CREATED_AT) as? Timestamp
-            val createdAtSeconds = timestampCreatedAt?.seconds ?: 0
+            val createdAtSeconds = timestampCreatedAt?.seconds ?: -1
 
             // Extract user fields and map Firestore document to UserInfo model
-            val userId = document.id
+            val userID = document.id
             val nickname = document.getString(FirestoreKey.DOCUMENT_KEY_NICKNAME) ?: ""
 
             // UserInfo Data
             val userInfo = UserInfo(
-                id = userId,
+                id = userID,
                 nickName = nickname,
                 createdAt = createdAtSeconds,
             )
@@ -86,7 +86,6 @@ class UserRepositoryImpl: UserRepository {
                 createdAt = createdAt.seconds
             )
             userCache[addedUserID] = addedUser
-
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -110,7 +109,6 @@ class UserRepositoryImpl: UserRepository {
             userCache[userID]?.let { currentUser ->
                 userCache[userID] = currentUser.copy(nickName = newNickName)
             }
-
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -128,7 +126,6 @@ class UserRepositoryImpl: UserRepository {
 
             // Remove from cache
             userCache.remove(userID)
-
             return true
         } catch (e: Exception) {
             e.printStackTrace()
