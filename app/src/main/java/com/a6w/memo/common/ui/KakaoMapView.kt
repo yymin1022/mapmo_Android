@@ -27,6 +27,7 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelManager
 import com.kakao.vectormap.label.LabelOptions
@@ -35,6 +36,8 @@ import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
 import java.lang.Exception
+
+private const val KAKAO_MAP_CAMERA_MOVE_DURATION_MS = 500
 
 /**
  * Kakao Map View
@@ -111,8 +114,11 @@ fun KakaoMapView(
         val cameraUpdate = CameraUpdateFactory
             .newCenterPosition(LatLng.from(focusLat, focusLng))
 
+        // Camera move animation
+        val cameraAnimation = CameraAnimation.from(KAKAO_MAP_CAMERA_MOVE_DURATION_MS, true, true)
+
         // Move map camera to CameraUpdate instance
-        kakaoMap?.moveCamera(cameraUpdate)
+        kakaoMap?.moveCamera(cameraUpdate, cameraAnimation)
     }
 
     // Launched Effect - Add Markers to Map
