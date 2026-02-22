@@ -3,6 +3,8 @@ package com.a6w.memo.data.repository
 import com.a6w.memo.data.firebase.FirestoreKey
 import com.a6w.memo.domain.model.Location
 import com.a6w.memo.domain.model.Mapmo
+import com.a6w.memo.domain.repository.LabelRepository
+import com.a6w.memo.domain.repository.MapmoListRepository
 import com.a6w.memo.domain.repository.MapmoRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,22 +25,25 @@ import kotlinx.coroutines.tasks.await
  */
 class MapmoRepositoryImpl: MapmoRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
-    private val mapmoCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+    private val mapmoCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO) }
 
     // Individual Mapmo cache keyed by mapmoID
     private val mapmoCache = mutableMapOf<String, Mapmo>()
-
+    private val mapmoListRepositoryImpl: MapmoListRepository = MapmoListRepositoryImpl()
     override suspend fun getMapmo(
         mapmoID: String,
         userID: String,
     ): Mapmo? {
         try {
+            val cachedMapmoData = mapmoCache[mapmoID]
+            if (cachedMapmoData != null) {
+                return cachedMapmoData
+            }
             // Fetch mapmo by ID
             val document =
                 mapmoCollection.document(mapmoID).get()
                     .await()
             // Check if the document exists
-
             if (document.exists().not()) return null
             // Extract GeoPoint from Firestore
             val geoPoint = document.getGeoPoint(FirestoreKey.DOCUMENT_KEY_LOCATION) ?: return null
@@ -111,7 +116,8 @@ class MapmoRepositoryImpl: MapmoRepository {
             val addedMapmoID = addedMapmoRef.id
             val addedMapmo = mapmoContent.copy(mapmoID = addedMapmoID)
             mapmoCache[addedMapmoID] = addedMapmo
-
+            // Remove cached MapmoList Data
+            mapmoListRepositoryImpl.removeCachedMapmoList(userID)
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -148,7 +154,8 @@ class MapmoRepositoryImpl: MapmoRepository {
             mapmoCache[mapmoContent.mapmoID] = mapmoContent.copy(
                 updatedAt = updatedAt.seconds
             )
-
+            // Remove cached MapmoList Data
+            mapmoListRepositoryImpl.removeCachedMapmoList(userID)
             return true
         } catch (e: Exception) {
             e.printStackTrace()
