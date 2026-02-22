@@ -22,6 +22,7 @@ object FirestoreKey {
     // Collection keys
     const val COLLECTION_KEY_LABEL = "label"
     const val COLLECTION_KEY_MAPMO = "mapmo"
+    const val COLLECTION_KEY_USER = "user"
 
     // Document field keys
     const val DOCUMENT_KEY_COLOR = "color"
@@ -32,4 +33,6 @@ object FirestoreKey {
     const val DOCUMENT_KEY_LOCATION = "location"
     const val DOCUMENT_KEY_IS_NOTIFY_ENABLED = "isNotifyEnabled"
     const val DOCUMENT_KEY_LABEL_ID = "labelID"
+    const val DOCUMENT_KEY_NICKNAME = "nickname"
+    const val DOCUMENT_KEY_CREATED_AT = "createdAt"
 }

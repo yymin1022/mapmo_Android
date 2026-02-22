@@ -35,11 +35,9 @@ class LabelRepositoryImpl: LabelRepository {
 
     override suspend fun getLabelList(userID: String): LabelList? {
         try {
+            // Return cache if available
+            labelListCache[userID]?.let { return it }
 
-            val cachedLabelList = labelListCache[userID]
-            if (cachedLabelList != null) {
-                return cachedLabelList
-            }
             // Fetch all label documents that belong to the given userID
             val snapshot = labelCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
@@ -101,6 +99,8 @@ class LabelRepositoryImpl: LabelRepository {
         userID: String
     ): Label? {
         try {
+            // Return cached label if available
+            labelCache[labelID]?.let { return it }
             // Retrieve the label document by ID
             val document = labelCollection
                 .document(labelID)

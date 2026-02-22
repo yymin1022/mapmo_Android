@@ -35,10 +35,9 @@ class MapmoListRepositoryImpl: MapmoListRepository {
         userID: String,
     ): MapmoList? {
         try {
-            val cachedList = mapmoListCache[userID]
-            if (cachedList != null) {
-                return cachedList
-            }
+            // Return cached mapmolist if available
+            mapmoListCache[userID]?.let { return it }
+
             // Fetch all mapmo documents that belong to the given userID
             val snapshot = mapmoCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
@@ -68,7 +67,7 @@ class MapmoListRepositoryImpl: MapmoListRepository {
                     document.getBoolean(FirestoreKey.DOCUMENT_KEY_IS_NOTIFY_ENABLED) ?: false
                 val labelID = document.getString(FirestoreKey.DOCUMENT_KEY_LABEL_ID) // nullable
                 val updatedAt =
-                    document.getTimestamp(FirestoreKey.DOCUMENT_KEY_UPDATED_AT)?.seconds ?: 0
+                    document.getTimestamp(FirestoreKey.DOCUMENT_KEY_UPDATED_AT)?.seconds ?: -1
                 // Mapmo Data
                 Mapmo(
                     mapmoID = mapmoID,
@@ -143,10 +142,11 @@ class MapmoListRepositoryImpl: MapmoListRepository {
             return null
         }
     }
+
     override suspend fun removeCachedMapmoList(
         userID: String,
-    ): Boolean{
-        try{
+    ): Boolean {
+        try {
             // Remove cached mapmoList
             mapmoListCache.remove(userID)
             return true
