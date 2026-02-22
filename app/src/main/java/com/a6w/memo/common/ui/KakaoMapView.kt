@@ -20,7 +20,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.a6w.memo.R
 import com.a6w.memo.common.model.KakaoMapCameraFocus
-import com.a6w.memo.common.model.KakaoMapMarker
+import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -39,13 +39,13 @@ import java.lang.Exception
 /**
  * Kakao Map View
  * - Render KakaoMap View Instance as Composable AndroidView
- * - Map markers can be added with [KakaoMapMarker] data
+ * - Map markers can be added with [MapMarkerData] data
  */
 @Composable
 fun KakaoMapView(
     modifier: Modifier = Modifier,
     cameraFocus: KakaoMapCameraFocus? = null,
-    markers: List<KakaoMapMarker>? = null,
+    markers: List<MapMarkerData>? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -144,7 +144,7 @@ fun KakaoMapView(
  */
 private fun addMarkers(
     labelManager: LabelManager?,
-    markers: List<KakaoMapMarker>?,
+    markers: List<MapMarkerData>?,
 ) {
     labelManager?.layer?.let {
         // Generate kakao map label style and cache it
