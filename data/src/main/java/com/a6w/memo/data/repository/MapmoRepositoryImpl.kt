@@ -64,7 +64,7 @@ class MapmoRepositoryImpl: MapmoRepository {
             val labelID = document.getString(FirestoreKey.DOCUMENT_KEY_LABEL_ID) // nullable
             val timeStampUpdatedAt =
                 document.get(FirestoreKey.DOCUMENT_KEY_UPDATED_AT) as? Timestamp
-            val updatedAt = timeStampUpdatedAt?.seconds ?: 0
+            val updatedAt = timeStampUpdatedAt?.seconds ?: -1
 
             // Result Mapmo Data
             val mapmoResult = Mapmo(
