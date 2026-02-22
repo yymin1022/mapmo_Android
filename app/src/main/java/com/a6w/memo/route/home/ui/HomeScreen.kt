@@ -1,9 +1,10 @@
 package com.a6w.memo.route.home.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -21,6 +22,7 @@ import com.a6w.memo.common.ui.KakaoMapView
 import com.a6w.memo.route.home.viewmodel.HomeViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.dp
+import com.a6w.memo.domain.model.Mapmo
 import com.a6w.memo.domain.model.MapmoList
 
 private val BOTTOM_SHEET_HEIGHT_MINIMUM_DP = 180.dp
@@ -66,6 +68,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize(),
                     mapmoList = mapmoList,
+                    onClickMapmo = viewModel::moveMapCameraToMapmo,
                 )
             }
         },
@@ -92,9 +95,50 @@ fun HomeScreen(
 private fun MapmoListView(
     modifier: Modifier = Modifier,
     mapmoList: MapmoList?,
+    onClickMapmo: (mapmo: Mapmo) -> Unit,
 ) {
-    // TODO: Mapmo List UI
-    Text("Mapmo List")
+    if(mapmoList == null) return
+
+    LazyColumn(
+        modifier = modifier,
+    ) {
+        val labelList = mapmoList.list
+
+        labelList.forEach {
+            val label = it.labelItem
+            val mapmoList = it.mapmoList
+
+            mapmoList.forEach { mapmo ->
+                item {
+                    MapmoItem(
+                        mapmo = mapmo,
+                        onClick = { onClickMapmo(mapmo) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Mapmo List Item
+ */
+@Composable
+private fun MapmoItem(
+    modifier: Modifier = Modifier,
+    mapmo: Mapmo,
+    onClick: () -> Unit,
+) {
+    val mapmoContent = mapmo.content
+    val mapmoDate = mapmo.updatedAt
+
+    Column(
+        modifier = modifier
+            .clickable { onClick() },
+    ) {
+        Text(mapmoContent)
+        Text(mapmoDate.toString())
+    }
 }
 
 /**
