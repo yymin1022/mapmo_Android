@@ -15,7 +15,7 @@ interface LabelRepository {
     // Add mapmo Label
     suspend fun addLabel(userID: String, labelContent: Label): Boolean
     // update mapmo label
-    suspend fun updateLabel(labelID: String, labelContent: Label): Boolean
+    suspend fun updateLabel(labelID: String, labelContent: Label, userID: String): Boolean
     // Delete mapmo label
     suspend fun deleteLabel(labelID: String, userID: String): Boolean
 }

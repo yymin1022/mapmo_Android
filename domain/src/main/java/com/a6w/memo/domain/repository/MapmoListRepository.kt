@@ -8,4 +8,6 @@ import com.a6w.memo.domain.model.MapmoList
 interface MapmoListRepository {
     // Fetch Mapmo information grouped by label
     suspend fun getMapmoList(userID: String): MapmoList?
+    // Remove MapmoList cache
+    suspend fun removeCachedMapmoList(userID: String): Boolean
 }

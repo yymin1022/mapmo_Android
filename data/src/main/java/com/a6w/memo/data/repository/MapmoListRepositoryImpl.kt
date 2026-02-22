@@ -9,6 +9,7 @@ import com.a6w.memo.domain.model.MapmoListItem
 import com.a6w.memo.domain.repository.MapmoListRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlin.collections.mutableMapOf
 
 /**
  * MapmoListRepositoryImpl
@@ -20,17 +21,26 @@ import kotlinx.coroutines.tasks.await
  * - Fetch all Label documents for the same user
  * - Group Mapmo items by labelID
  * - Build and return a MapmoList domain model
- *
+ * - Cache the result to avoid redundant server calls
  */
 class MapmoListRepositoryImpl: MapmoListRepository {
-    private val db = FirebaseFirestore.getInstance()
+    private val firestoreDB = FirebaseFirestore.getInstance()
+    private val mapmoCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO) }
+    private val labelCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL) }
+
+    // In-memory cache for MapmoList
+    private var mapmoListCache = mutableMapOf<String, MapmoList>()
 
     override suspend fun getMapmoList(
         userID: String,
     ): MapmoList? {
         try {
+            val cachedList = mapmoListCache[userID]
+            if (cachedList != null) {
+                return cachedList
+            }
             // Fetch all mapmo documents that belong to the given userID
-            val snapshot = db.collection(FirestoreKey.COLLECTION_KEY_MAPMO)
+            val snapshot = mapmoCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
@@ -71,7 +81,7 @@ class MapmoListRepositoryImpl: MapmoListRepository {
             }
 
             // Fetch all label documents for the user
-            val labelSnapshot = db.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+            val labelSnapshot = labelCollection
                 .whereEqualTo(FirestoreKey.DOCUMENT_KEY_USER_ID, userID)
                 .get()
                 .await()
@@ -117,17 +127,33 @@ class MapmoListRepositoryImpl: MapmoListRepository {
                 )
             }
 
-            // Return final MapmoList result
-            return MapmoList(
+            val mapmoListResult = MapmoList(
                 count = mapmoList.size,
                 list = listItem,
             )
 
+            // Store in cache
+            mapmoListCache[userID] = mapmoListResult
+
+            // Return final MapmoList result
+            return mapmoListResult
         } catch (e: Exception) {
             e.printStackTrace()
             // Return null if an error occurs
             return null
         }
     }
-
+    override suspend fun removeCachedMapmoList(
+        userID: String,
+    ): Boolean{
+        try{
+            // Remove cached mapmoList
+            mapmoListCache.remove(userID)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Return null if an error occurs
+            return false
+        }
+    }
 }
