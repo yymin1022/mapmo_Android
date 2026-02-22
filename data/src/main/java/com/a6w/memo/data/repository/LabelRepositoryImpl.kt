@@ -5,7 +5,6 @@ import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.LabelList
 import com.a6w.memo.domain.model.Location
 import com.a6w.memo.domain.repository.LabelRepository
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.tasks.await
@@ -26,18 +25,20 @@ import kotlinx.coroutines.tasks.await
  **/
 class LabelRepositoryImpl: LabelRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
-    private val labelCollection = firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL)
+    private val labelCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL) }
 
     // In-memory cache for LabelList
-    private var labelListCache: LabelList? = null
+    private var labelListCache = mutableMapOf<String, LabelList>()
 
     // Individual Label cache keyed by labelID
     private val labelCache = mutableMapOf<String, Label>()
 
     override suspend fun getLabelList(userID: String): LabelList? {
         try {
-            labelListCache?.let {
-                return it
+
+            val cachedLabelList = labelListCache[userID]
+            if (cachedLabelList != null) {
+                return cachedLabelList
             }
             // Fetch all label documents that belong to the given userID
             val snapshot = labelCollection
@@ -83,7 +84,7 @@ class LabelRepositoryImpl: LabelRepository {
                 list = labels
             )
             // Cache the full label list
-            labelListCache = labelListResult
+            labelListCache[userID] = labelListResult
             // Populate individual label cache for quick lookup by ID
             labels.forEach {
                 labelCache[it.id] = it
@@ -106,6 +107,10 @@ class LabelRepositoryImpl: LabelRepository {
                 .get()
                 .await()
             if (document.exists()) {
+                val cachedLabelData = labelCache[labelID]
+                if (cachedLabelData != null) {
+                    return cachedLabelData
+                }
                 // Validate that the label belongs to the requesting user
                 val documentUserID = document.getString(FirestoreKey.DOCUMENT_KEY_USER_ID)
                 if (documentUserID != userID) {
@@ -176,11 +181,9 @@ class LabelRepositoryImpl: LabelRepository {
 
             // Update in-memory caches to keep local state consistent
             labelCache[addedLabelID] = newLabel
-            labelListCache = labelListCache?.let {
-                LabelList(
-                    list = it.list + newLabel
-                )
-            }
+            labelListCache[userID] = labelListCache[userID]?.let {
+                it.copy(list = it.list + newLabel)
+            } ?: LabelList(list = listOf(newLabel))
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -190,7 +193,8 @@ class LabelRepositoryImpl: LabelRepository {
 
     override suspend fun updateLabel(
         labelID: String,
-        labelContent: Label
+        labelContent: Label,
+        userID: String
     ): Boolean {
         try {
             // Convert domain Location object to Firestore GeoPoint
@@ -213,13 +217,9 @@ class LabelRepositoryImpl: LabelRepository {
             labelCache[labelID] = labelContent
 
             // Replace updated label in list cache (if exists)
-            labelListCache = labelListCache?.let { labelList ->
-                labelList.copy(
-                    list = labelList.list.map {
-                        if (it.id == labelID) labelContent else it
-                    }
-                )
-            }
+            labelListCache[userID] = labelListCache[userID]?.let {
+                it.copy(list = it.list + labelContent)
+            } ?: LabelList(list = listOf(labelContent))
             return true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -253,9 +253,9 @@ class LabelRepositoryImpl: LabelRepository {
             labelCache.remove(labelID)
 
             // Remove label from list cache (if exists)
-            labelListCache = labelListCache?.let { labelList ->
-                labelList.copy(
-                    list = labelList.list.filter { it.id != labelID }
+            labelListCache[userID]?.let { currentCache ->
+                labelListCache[userID] = currentCache.copy(
+                    list = currentCache.list.filter { it.id != labelID }
                 )
             }
             return true
