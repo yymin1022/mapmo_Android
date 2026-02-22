@@ -71,6 +71,12 @@ class HomeViewModel @Inject constructor(
             mapmoList = mapmoList,
             mapMarkerList = mapMarkerList,
         )
+
+        // Move camera focus to first mapmo
+        val targetMapmo = mapmoList?.list
+            ?.firstOrNull()?.mapmoList
+            ?.firstOrNull()
+        moveMapCameraToMapmo(targetMapmo)
     }
 
     /**
