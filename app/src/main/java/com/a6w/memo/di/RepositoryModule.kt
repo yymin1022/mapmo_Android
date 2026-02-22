@@ -1,0 +1,23 @@
+package com.a6w.memo.di
+
+import com.a6w.memo.data.repository.MapmoListRepositoryImpl
+import com.a6w.memo.data.repository.MapmoRepositoryImpl
+import com.a6w.memo.domain.repository.MapmoListRepository
+import com.a6w.memo.domain.repository.MapmoRepository
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+    @Provides
+    @Singleton
+    fun provideMapmoRepository(): MapmoRepository = MapmoRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun provideMapmoListRepository(): MapmoListRepository = MapmoListRepositoryImpl()
+}
