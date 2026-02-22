@@ -35,10 +35,9 @@ class MapmoRepositoryImpl: MapmoRepository {
         userID: String,
     ): Mapmo? {
         try {
-            val cachedMapmoData = mapmoCache[mapmoID]
-            if (cachedMapmoData != null) {
-                return cachedMapmoData
-            }
+            // Return cached mapmo if available
+            mapmoCache[mapmoID]?.let { return it }
+
             // Fetch mapmo by ID
             val document =
                 mapmoCollection.document(mapmoID).get()
