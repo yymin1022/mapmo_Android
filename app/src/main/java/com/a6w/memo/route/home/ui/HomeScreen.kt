@@ -111,21 +111,22 @@ private fun MapmoListView(
             val label = it.labelItem
             val mapmoList = it.mapmoList
 
-            mapmoList.forEach { mapmo ->
+            // Mapmo Items
+            items(mapmoList.size) { idx ->
+                val mapmo = mapmoList[idx]
                 val mapmoID = mapmo.mapmoID
-                item {
-                    MapmoItem(
-                        mapmo = mapmo,
-                        onClick = { onClickMapmo(mapmoID) },
-                    )
-                }
+
+                MapmoItem(
+                    mapmo = mapmo,
+                    onClick = { onClickMapmo(mapmoID) },
+                )
             }
         }
     }
 }
 
 /**
- * Mapmo List Item
+ * Mapmo List Item - Mapmo
  */
 @Composable
 private fun MapmoItem(
