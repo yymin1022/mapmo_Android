@@ -41,7 +41,7 @@ private val BOTTOM_SHEET_RADIUS_DP = 16.dp
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToMapmo: () -> Unit,
+    navigateToMapmo: (mapmoID: String?) -> Unit,
     navigateToSetting: () -> Unit,
 ) {
     // Bottom Sheet state
@@ -71,7 +71,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize(),
                     mapmoList = mapmoList,
-                    onClickMapmo = viewModel::moveMapCameraToMapmo,
+                    onClickMapmo = navigateToMapmo,
                 )
             }
         },
@@ -98,7 +98,7 @@ fun HomeScreen(
 private fun MapmoListView(
     modifier: Modifier = Modifier,
     mapmoList: MapmoList?,
-    onClickMapmo: (mapmo: Mapmo) -> Unit,
+    onClickMapmo: (mapmoID: String?) -> Unit,
 ) {
     if(mapmoList == null) return
 
@@ -112,10 +112,11 @@ private fun MapmoListView(
             val mapmoList = it.mapmoList
 
             mapmoList.forEach { mapmo ->
+                val mapmoID = mapmo.mapmoID
                 item {
                     MapmoItem(
                         mapmo = mapmo,
-                        onClick = { onClickMapmo(mapmo) },
+                        onClick = { onClickMapmo(mapmoID) },
                     )
                 }
             }
@@ -182,14 +183,14 @@ private fun MapmoMapView(
 @Composable
 private fun DebugUI(
     modifier: Modifier = Modifier,
-    navigateToMapmo: () -> Unit,
+    navigateToMapmo: (mapmoID: String?) -> Unit,
     navigateToSetting: () -> Unit,
 ) {
     Column(
         modifier = modifier,
     ) {
         Button(
-            onClick = navigateToMapmo,
+            onClick = { navigateToMapmo(null) },
         ) {
             Text("[DEBUG] Open Mapmo Screen")
         }
