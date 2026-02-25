@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.a6w.memo.route.home.ui.HomeScreen
 import com.a6w.memo.route.mapmo.MapmoScreen
 import com.a6w.memo.route.setting.SettingScreen
@@ -29,7 +30,7 @@ fun MapmoNavHost(
         composable<MapmoNavRoute.Home> {
             HomeScreenNav(
                 modifier = Modifier,
-                navigateToMapmo = { navController.navigate(MapmoNavRoute.Mapmo) },
+                navigateToMapmo = { navController.navigate(MapmoNavRoute.Mapmo()) },
                 navigateToSetting = { navController.navigate(MapmoNavRoute.Setting) },
             )
         }
