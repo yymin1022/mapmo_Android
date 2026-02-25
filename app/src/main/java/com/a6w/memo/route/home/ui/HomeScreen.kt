@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
@@ -22,6 +24,7 @@ import com.a6w.memo.common.ui.KakaoMapView
 import com.a6w.memo.route.home.viewmodel.HomeViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.a6w.memo.domain.model.Mapmo
 import com.a6w.memo.domain.model.MapmoList
 
@@ -129,15 +132,26 @@ private fun MapmoItem(
     mapmo: Mapmo,
     onClick: () -> Unit,
 ) {
-    val mapmoContent = mapmo.content
     val mapmoDate = mapmo.updatedAt
+    val mapmoTitle = mapmo.title
 
     Column(
         modifier = modifier
-            .clickable { onClick() },
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text(mapmoContent)
-        Text(mapmoDate.toString())
+        // Mapmo Title Text
+        Text(
+            text = mapmoTitle,
+            fontSize = 18.sp,
+        )
+
+        // Mapmo Date Text
+        Text(
+            text = mapmoDate.toString(),
+            fontSize = 14.sp,
+        )
     }
 }
 
