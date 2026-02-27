@@ -23,10 +23,14 @@ import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.ui.KakaoMapView
 import com.a6w.memo.route.home.viewmodel.HomeViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.Mapmo
 import com.a6w.memo.domain.model.MapmoList
+import androidx.core.graphics.toColorInt
+import com.a6w.memo.common.util.FirebaseLogUtil
 
 private val BOTTOM_SHEET_HEIGHT_MINIMUM_DP = 180.dp
 private val BOTTOM_SHEET_RADIUS_DP = 16.dp
@@ -111,6 +115,17 @@ private fun MapmoListView(
             val label = it.labelItem
             val mapmoList = it.mapmoList
 
+            // Label Item
+            // - Show only when label is not null
+            label?.let {
+                item {
+                    LabelItem(
+                        modifier = Modifier,
+                        label = label,
+                    )
+                }
+            }
+
             // Mapmo Items
             items(mapmoList.size) { idx ->
                 val mapmo = mapmoList[idx]
@@ -122,6 +137,38 @@ private fun MapmoListView(
                 )
             }
         }
+    }
+}
+
+/**
+ * Mapmo List Item - Label
+ */
+@Composable
+private fun LabelItem(
+    modifier: Modifier = Modifier,
+    label: Label,
+) {
+    // Label Color Info
+    // - If info is wrong, use black color as default
+    val labelColor = try {
+        Color(label.color.toColorInt())
+    } catch(e: Exception) {
+        FirebaseLogUtil.logException(e, "Home")
+        Color.Black
+    }
+    val labelName = label.name
+
+    Box(
+        modifier = modifier
+            .padding(top = 16.dp)
+            .padding(horizontal = 16.dp),
+    ) {
+        Text(
+            modifier = modifier,
+            text = labelName,
+            color = labelColor,
+            fontSize = 18.sp,
+        )
     }
 }
 
