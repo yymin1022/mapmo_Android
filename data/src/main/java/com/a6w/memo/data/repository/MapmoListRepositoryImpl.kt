@@ -102,8 +102,8 @@ class MapmoListRepositoryImpl: MapmoListRepository {
 
                 // Only create Label if location exists
                 val id = document.id
-                val name = document.getString(FirestoreKey.DOCUMENT_KEY_COLOR) ?: ""
-                val color = document.getString(FirestoreKey.DOCUMENT_KEY_NAME) ?: ""
+                val name = document.getString(FirestoreKey.DOCUMENT_KEY_NAME) ?: ""
+                val color = document.getString(FirestoreKey.DOCUMENT_KEY_COLOR) ?: ""
 
                 // Label Data
                 Label(
