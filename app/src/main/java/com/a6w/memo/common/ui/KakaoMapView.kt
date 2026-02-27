@@ -19,14 +19,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.a6w.memo.R
-import com.a6w.memo.common.model.KakaoMapCameraFocus
-import com.a6w.memo.common.model.KakaoMapMarker
+import com.a6w.memo.common.model.MapCameraFocusData
+import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraAnimation
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelManager
 import com.kakao.vectormap.label.LabelOptions
@@ -36,16 +37,18 @@ import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
 import java.lang.Exception
 
+private const val KAKAO_MAP_CAMERA_MOVE_DURATION_MS = 500
+
 /**
  * Kakao Map View
  * - Render KakaoMap View Instance as Composable AndroidView
- * - Map markers can be added with [KakaoMapMarker] data
+ * - Map markers can be added with [MapMarkerData] data
  */
 @Composable
 fun KakaoMapView(
     modifier: Modifier = Modifier,
-    cameraFocus: KakaoMapCameraFocus? = null,
-    markers: List<KakaoMapMarker>? = null,
+    cameraFocus: MapCameraFocusData? = null,
+    markers: List<MapMarkerData>? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -111,8 +114,11 @@ fun KakaoMapView(
         val cameraUpdate = CameraUpdateFactory
             .newCenterPosition(LatLng.from(focusLat, focusLng))
 
+        // Camera move animation
+        val cameraAnimation = CameraAnimation.from(KAKAO_MAP_CAMERA_MOVE_DURATION_MS, true, true)
+
         // Move map camera to CameraUpdate instance
-        kakaoMap?.moveCamera(cameraUpdate)
+        kakaoMap?.moveCamera(cameraUpdate, cameraAnimation)
     }
 
     // Launched Effect - Add Markers to Map
@@ -144,7 +150,7 @@ fun KakaoMapView(
  */
 private fun addMarkers(
     labelManager: LabelManager?,
-    markers: List<KakaoMapMarker>?,
+    markers: List<MapMarkerData>?,
 ) {
     labelManager?.layer?.let {
         // Generate kakao map label style and cache it

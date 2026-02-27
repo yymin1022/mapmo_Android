@@ -16,7 +16,10 @@ sealed interface MapmoNavRoute {
 
     // Mapmo
     @Serializable
-    data object Mapmo: MapmoNavRoute
+    data class Mapmo(
+        // Mapmo ID. If null, unavailable mapmo
+        val mapmoID: String? = null,
+    ): MapmoNavRoute
 
     // Setting
     @Serializable
