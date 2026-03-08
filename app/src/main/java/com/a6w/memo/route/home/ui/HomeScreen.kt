@@ -30,7 +30,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.Mapmo
 import androidx.core.graphics.toColorInt
 import com.a6w.memo.common.util.FirebaseLogUtil
@@ -85,7 +84,7 @@ fun HomeScreen(
                         .fillMaxSize(),
                     dataList = dataList,
                     onClickMapmo = navigateToMapmo,
-                    onScrollList = viewModel::moveMapCameraToMapmo,
+                    onScrollMapmoList = viewModel::moveMapCameraToMapmo,
                 )
             }
         },
@@ -113,7 +112,7 @@ private fun MapmoListView(
     modifier: Modifier = Modifier,
     dataList: List<HomeListUiItem>?,
     onClickMapmo: (mapmoID: String?) -> Unit,
-    onScrollList: (mapmo: Mapmo) -> Unit,
+    onScrollMapmoList: (mapmoID: String) -> Unit,
 ) {
     if(dataList == null) return
 
@@ -131,8 +130,8 @@ private fun MapmoListView(
                     // Mapmo Item
                     is HomeListUiItem.MapmoUiItem -> {
                         // Callback with target mapmo
-                        val targetMapmo = targetItem.mapmo
-                        onScrollList(targetMapmo)
+                        val mapmoID = targetItem.mapmoID
+                        onScrollMapmoList(mapmoID)
                     }
 
                     else -> {}
@@ -150,19 +149,26 @@ private fun MapmoListView(
             when(val targetItem = dataList[idx]) {
                 // Label Item
                 is HomeListUiItem.LabelUiItem -> {
-                    val label = targetItem.label
+                    val labelColor = targetItem.labelColor
+                    val labelName = targetItem.labelName
+
                     LabelItem(
                         modifier = Modifier,
-                        label = label,
+                        labelColor = labelColor,
+                        labelName = labelName,
                     )
                 }
 
                 // Mapmo Item
                 is HomeListUiItem.MapmoUiItem -> {
-                    val mapmo = targetItem.mapmo
-                    val mapmoID = mapmo.mapmoID
+                    val mapmoID = targetItem.mapmoID
+                    val mapmoTitle = targetItem.mapmoTitle
+                    val mapmoUpdatedAt = targetItem.mapmoUpdatedAt
+
                     MapmoItem(
-                        mapmo = mapmo,
+                        modifier = Modifier,
+                        mapmoTitle = mapmoTitle,
+                        mapmoUpdatedAt = mapmoUpdatedAt,
                         onClick = { onClickMapmo(mapmoID) },
                     )
                 }
@@ -177,17 +183,17 @@ private fun MapmoListView(
 @Composable
 private fun LabelItem(
     modifier: Modifier = Modifier,
-    label: Label,
+    labelColor: String,
+    labelName: String,
 ) {
     // Label Color Info
     // - If info is wrong, use black color as default
     val labelColor = try {
-        Color(label.color.toColorInt())
+        Color(labelColor.toColorInt())
     } catch(e: Exception) {
         FirebaseLogUtil.logException(e, "Home")
         Color.Black
     }
-    val labelName = label.name
 
     Box(
         modifier = modifier
@@ -208,11 +214,10 @@ private fun LabelItem(
 @Composable
 private fun MapmoItem(
     modifier: Modifier = Modifier,
-    mapmo: Mapmo,
+    mapmoTitle: String,
+    mapmoUpdatedAt: String,
     onClick: () -> Unit,
 ) {
-    val mapmoDate = mapmo.updatedAt
-    val mapmoTitle = mapmo.title
 
     Column(
         modifier = modifier
@@ -228,7 +233,7 @@ private fun MapmoItem(
 
         // Mapmo Date Text
         Text(
-            text = mapmoDate.toString(),
+            text = mapmoUpdatedAt,
             fontSize = 14.sp,
         )
     }
