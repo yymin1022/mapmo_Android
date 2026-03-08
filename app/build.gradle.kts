@@ -77,6 +77,7 @@ dependencies {
 
     // Hilt Dependency
     implementation(libs.hilt.android)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.hilt.compiler)
 
     // Project Dependency
