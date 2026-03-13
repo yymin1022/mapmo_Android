@@ -53,9 +53,10 @@ class GeofenceRepositoryImpl @Inject constructor(
         geofencingClient.addGeofences(request, geofencePendingIntent).await()
     }
 
-    override fun unregisterGeofence(
+    override suspend fun unregisterGeofence(
         mapmoID: String,
-    ): Result<Unit> {
-        TODO("Not yet implemented")
+    ): Result<Unit> = runCatching {
+        // Remove Geofence Request from Client by ID
+        geofencingClient.removeGeofences(listOf(mapmoID)).await()
     }
 }

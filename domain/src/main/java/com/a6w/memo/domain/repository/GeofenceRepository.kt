@@ -11,5 +11,5 @@ interface GeofenceRepository {
     // Register geofencing
     suspend fun registerGeofence(mapmoID: String, location: Location): Result<Unit>
     // Unregister geofencing
-    fun unregisterGeofence(mapmoID: String): Result<Unit>
+    suspend fun unregisterGeofence(mapmoID: String): Result<Unit>
 }
