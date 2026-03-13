@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
 
+    // GMS Geofencing Dependency
+    implementation(libs.play.services.location)
+
     // Hilt Dependency
     implementation(libs.hilt.android)
     implementation(libs.androidx.compose.foundation)
