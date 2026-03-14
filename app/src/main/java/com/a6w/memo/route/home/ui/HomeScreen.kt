@@ -84,7 +84,7 @@ fun HomeScreen(
                         .fillMaxSize(),
                     dataList = dataList,
                     onClickMapmo = navigateToMapmo,
-                    onScrollMapmoList = viewModel::moveMapCameraToMapmo,
+                    onScrollMapmoList = viewModel::moveMapCameraToLabel,
                 )
             }
         },
@@ -112,7 +112,7 @@ private fun MapmoListView(
     modifier: Modifier = Modifier,
     dataList: List<HomeListUiItem>?,
     onClickMapmo: (mapmoID: String?) -> Unit,
-    onScrollMapmoList: (mapmoID: String) -> Unit,
+    onScrollMapmoList: (labelID: String) -> Unit,
 ) {
     if(dataList == null) return
 
@@ -127,11 +127,11 @@ private fun MapmoListView(
             .collect { idx ->
                 // Get target item from list
                 when(val targetItem = dataList[idx]) {
-                    // Mapmo Item
-                    is HomeListUiItem.MapmoUiItem -> {
-                        // Callback with target mapmo
-                        val mapmoID = targetItem.mapmoID
-                        onScrollMapmoList(mapmoID)
+                    // Label Item
+                    is HomeListUiItem.LabelUiItem -> {
+                        // Callback with target label
+                        val labelID = targetItem.labelID
+                        onScrollMapmoList(labelID)
                     }
 
                     else -> {}

@@ -42,32 +42,36 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Move camera focus to Mapmo
+     * Move camera focus to Label
      */
-    fun moveMapCameraToMapmo(mapmoID: String) {
-        // Get target mapmo
-        val targetMapmo = mapmoList?.list?.firstNotNullOfOrNull { item ->
-            item.mapmoList.find { it.mapmoID == mapmoID }
-        }
+    fun moveMapCameraToLabel(labelID: String) {
+        viewModelScope.launch {
+            // Get target label
+            val targetLabel = mapmoList?.list?.firstOrNull { item ->
+                item.labelItem?.id == labelID
+            }?.labelItem
 
-        if(targetMapmo == null) return
+            if(targetLabel == null) return@launch
 
-        // Get mapmo location info
-        val mapmoLat = targetMapmo.location.lat.toFloat()
-        val mapmoLng = targetMapmo.location.lng.toFloat()
+            // Get label location info
+            val labelLocation = targetLabel.location
+            val labelLat = labelLocation.lat.toFloat()
+            val labelLng = labelLocation.lng.toFloat()
 
-        // Generate camera focus data
-        val cameraFocusData = MapCameraFocusData(
-            latitude = mapmoLat,
-            longitude = mapmoLng,
-        )
-
-        // Update as UI State
-        _uiState.update {
-                it.copy(
-                mapCameraFocus = cameraFocusData,
+            // Generate camera focus data
+            val cameraFocusData = MapCameraFocusData(
+                latitude = labelLat,
+                longitude = labelLng,
             )
+
+            // Update as UI State
+            _uiState.update {
+                it.copy(
+                    mapCameraFocus = cameraFocusData,
+                )
+            }
         }
+
     }
 
     /**
@@ -81,14 +85,17 @@ class HomeViewModel @Inject constructor(
             // Generate List UI Items
             val dataList = buildList {
                 mapmoList?.list?.forEach { mapmoGroup ->
+                    val labelItem = mapmoGroup.labelItem
+                    if(labelItem == null) return@forEach
+
                     // Label Item
-                    mapmoGroup.labelItem?.let { label ->
+                    labelItem.let { label ->
                         add(label.toUiItem())
                     }
 
                     // Each Mapmo Items
                     mapmoGroup.mapmoList.forEach { mapmo ->
-                        add(mapmo.toUiItem())
+                        add(mapmo.toUiItem(labelItem))
                     }
                 }
             }
@@ -104,13 +111,12 @@ class HomeViewModel @Inject constructor(
                 )
             }
 
-            // Move camera focus to first mapmo
+            // Move camera focus to first label
             mapmoList?.list
-                ?.firstOrNull()?.mapmoList
-                ?.firstOrNull()
+                ?.firstOrNull()?.labelItem
                 ?.let {
-                    val mapmoID = it.mapmoID
-                    moveMapCameraToMapmo(mapmoID)
+                    val labelID = it.id
+                    moveMapCameraToLabel(labelID)
                 }
         }
     }
@@ -131,13 +137,27 @@ class HomeViewModel @Inject constructor(
         mapmoList: MapmoList?,
     ): List<MapMarkerData>? {
         // Generate marker list from mapmo list instance
-        val markerList = mapmoList?.list?.flatMap { listItem ->
-            listItem.mapmoList.map { mapmo ->
-                mapmo.toMapMarkerData()
-            }
+        val markerList = mapmoList?.list?.mapNotNull { listItem ->
+            listItem.labelItem?.toMapMarkerData()
         }
 
         return markerList
+    }
+
+    /**
+     * Convert [Label] to [MapMarkerData]
+     */
+    private fun Label.toMapMarkerData(): MapMarkerData {
+        val labelTitle = this.name
+        val labelLocation = this.location
+        val labelLocationLat = labelLocation.lat.toFloat()
+        val labelLocationLng = labelLocation.lng.toFloat()
+
+        return MapMarkerData(
+            latitude = labelLocationLat,
+            longitude = labelLocationLng,
+            markerTitle = labelTitle,
+        )
     }
 
     /**
@@ -158,33 +178,17 @@ class HomeViewModel @Inject constructor(
     /**
      * Convert [Mapmo] to [HomeListUiItem.MapmoUiItem]
      */
-    private fun Mapmo.toUiItem(): HomeListUiItem.MapmoUiItem {
+    private fun Mapmo.toUiItem(label: Label): HomeListUiItem.MapmoUiItem {
         val mapmoID = this.mapmoID
-        val mapmoLocation = this.location
         val mapmoTitle = this.title
         val mapmoUpdatedAt = DatetimeUtil.getUiDateStringFromMillis(this.updatedAt * 1000)
 
+        val labelLocation = label.location
         return HomeListUiItem.MapmoUiItem(
             mapmoID = mapmoID,
-            mapmoLocation = mapmoLocation,
+            mapmoLocation = labelLocation,
             mapmoTitle = mapmoTitle,
             mapmoUpdatedAt = mapmoUpdatedAt,
-        )
-    }
-
-    /**
-     * Convert [Mapmo] to [MapMarkerData]
-     */
-    private fun Mapmo.toMapMarkerData(): MapMarkerData {
-        val mapmoTitle = this.content
-        val mapmoLocation = this.location
-        val mapmoLocationLat = mapmoLocation.lat.toFloat()
-        val mapmoLocationLng = mapmoLocation.lng.toFloat()
-
-        return MapMarkerData(
-            latitude = mapmoLocationLat,
-            longitude = mapmoLocationLng,
-            markerTitle = mapmoTitle,
         )
     }
 }
