@@ -36,6 +36,11 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <receiver
+            android:name=".receiver.GeofencingReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>
