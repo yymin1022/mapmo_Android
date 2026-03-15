@@ -38,23 +38,24 @@ class MapmoViewModel @Inject constructor(
     private val route = savedStateHandle.toRoute<MapmoNavRoute.Mapmo>()
     private val mapmoID: String = route.mapmoID ?: ""
 
-    // Internal domain state
+    // Domain state for the current Mapmo and Label
     private var currentMapmo: Mapmo? = null
     private var currentLabel: Label? = null
     var isEditing: Boolean = false
-    var isLabelListLoading: Boolean = false
-    var isLabelSelectorOpen: Boolean = false
     private val _uiState = MutableStateFlow(MapmoUiState())
     val uiState: StateFlow<MapmoUiState> = _uiState.asStateFlow()
+
+    // Temporary content used during edit mode
     private val _editingContent = MutableStateFlow("")
     val editingContent: StateFlow<String> = _editingContent.asStateFlow()
 
+    // Cached label list
     private val _labelList = MutableStateFlow<List<Label>>(emptyList())
     val labelList: StateFlow<List<Label>> = _labelList.asStateFlow()
 
     /**
-     * Fetch Mapmo data and associated label for the current [mapmoID].
-     * On success, also prepares map camera focus and marker data.
+     * Loads the Mapmo and its associated Label.
+     * Also prepares map camera focus and marker data based on the label location.
      */
     fun loadMapmo() {
         viewModelScope.launch {
@@ -70,7 +71,8 @@ class MapmoViewModel @Inject constructor(
                 userID = TEST_USER_ID,
             )
             currentMapmo = mapmo
-            // currentMapmo is unavailable
+
+            // Mapmo not found
             if (currentMapmo == null) {
                 _uiState.value = MapmoUiState(
                     isLoading = false,
@@ -224,17 +226,12 @@ class MapmoViewModel @Inject constructor(
             if(currentMapmo == null) return@launch
             val currentNotification = currentMapmo?.isNotifyEnabled ?: return@launch
 
-            // Optimistic update
-            _uiState.update {
-                it.copy(
-                    isNotifyEnabled = !currentNotification
-                )
-            }
             val updatedMapmo = currentMapmo?.copy(
                 isNotifyEnabled = !currentNotification
             )
 
             if(updatedMapmo == null) return@launch
+
             val success = mapmoRepository.updateMapmo(
                 mapmoContent = updatedMapmo,
                 userID = TEST_USER_ID,
@@ -251,6 +248,7 @@ class MapmoViewModel @Inject constructor(
             } else {
                 _uiState.update {
                     it.copy(
+                        isNotifyEnabled = !currentNotification,
                         errorMessage = null,
                     )
                 }
@@ -302,21 +300,15 @@ class MapmoViewModel @Inject constructor(
      * @param label The [Label] selected by the user.
      */
     fun selectLabel(label: Label) {
-        currentLabel = label
-        val labelName = currentLabel?.name
-        val labelColor = currentLabel?.color
-        val labelID = currentLabel?.id
-        val labelLat = currentLabel?.location?.lat
-        val labelLng = currentLabel?.location?.lng
+
+        val labelName = label.name
+        val labelColor = label.color
+        val labelID = label.id
+        val labelLat = label.location.lat
+        val labelLng = label.location.lng
         val markerTitle = currentMapmo?.content
 
-        if(labelLat == null || labelLng == null){
-            _uiState.value = MapmoUiState(
-                isLoading = false,
-                errorMessage = "label의 위치 정보를 찾을 수 없습니다",
-            )
-            return
-        }
+        // check markerTitle available
         if(markerTitle == null){
             _uiState.value = MapmoUiState(
                 isLoading = false,
@@ -324,9 +316,11 @@ class MapmoViewModel @Inject constructor(
             )
             return
         }
+
         val cameraFocus = createCameraFocus(lat = labelLat, lng = labelLng)
         val markers = createMarkers(lat = labelLat, lng = labelLng, markerTitle = markerTitle)
 
+        currentLabel = label
         _uiState.update {
             it.copy(
                 labelName = labelName,
