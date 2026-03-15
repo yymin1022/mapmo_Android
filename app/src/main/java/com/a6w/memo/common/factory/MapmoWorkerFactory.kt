@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.a6w.memo.data.worker.MapmoBluetoothWorker
 import com.a6w.memo.data.worker.MapmoNotificationWorker
+import com.a6w.memo.domain.repository.BleRepository
 import com.a6w.memo.domain.repository.LabelRepository
 import com.a6w.memo.domain.repository.MapmoRepository
 import com.a6w.memo.domain.service.MapmoNotificationService
@@ -15,7 +17,8 @@ import kotlin.jvm.java
  * Mapmo Notification Worker Factory
  * - Generates instance of [MapmoNotificationWorker] with Android Context
  */
-class MapmoNotificationWorkerFactory @Inject constructor(
+class MapmoWorkerFactory @Inject constructor(
+    private val bleRepository: BleRepository,
     private val labelRepository: LabelRepository,
     private val mapmoRepository: MapmoRepository,
     private val notificationService: MapmoNotificationService
@@ -26,7 +29,7 @@ class MapmoNotificationWorkerFactory @Inject constructor(
         workerClassName: String,
         workerParameters: WorkerParameters,
     ): ListenableWorker? {
-        // Generate Mapmo Notification Worker
+        // Generate Mapmo Bluetooth / Notification Worker
         // - If class name is other, nothing is generated
         return when(workerClassName) {
             MapmoNotificationWorker::class.java.name -> {
@@ -38,6 +41,17 @@ class MapmoNotificationWorkerFactory @Inject constructor(
                     notificationService = notificationService,
                 )
             }
+
+            MapmoBluetoothWorker::class.java.name -> {
+                MapmoBluetoothWorker(
+                    context = appContext,
+                    params = workerParameters,
+                    labelRepository = labelRepository,
+                    mapmoRepository = mapmoRepository,
+                    bleRepository = bleRepository,
+                )
+            }
+
             else -> null
         }
     }
