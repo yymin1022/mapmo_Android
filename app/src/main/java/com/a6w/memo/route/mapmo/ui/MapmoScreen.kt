@@ -56,13 +56,7 @@ import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.ui.KakaoMapView
 import com.a6w.memo.common.util.DatetimeUtil
 import com.a6w.memo.domain.model.Label
-import com.a6w.memo.domain.model.Location
-import com.a6w.memo.domain.model.Mapmo
 import com.a6w.memo.route.mapmo.viewmodel.MapmoViewModel
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 // ——— Constants ———————————————————————————————————————————
 
@@ -250,23 +244,25 @@ private fun ErrorContent(
 // ——— Main Content ————————————————————————————————————————
 
 /**
- * Renders the full Mapmo detail layout once data is available.
- * Scrollable content occupies the upper area; the map is fixed at the bottom.
+ * Displays the main content section including label chip,
+ * optional label selector, timestamp, notification toggle,
+ * and the memo content card.
  *
- * @param modifier [Modifier] applied to the root layout, typically [Modifier.weight].
- * @param mapmo Non-null Mapmo data to display.
- * @param label Currently associated label, null if unavailable.
- * @param labelList All labels available for selection in edit mode.
+ * @param content Mapmo memo content.
+ * @param updatedAt Last updated timestamp (epoch millis).
+ * @param isNotifyEnabled Whether notification is enabled.
+ * @param currentLabelID Currently selected label ID.
+ * @param labelName Name of the associated label.
+ * @param labelColor Color string of the associated label.
+ * @param labelList Labels available for selection.
  * @param isEditing Whether the screen is currently in edit mode.
- * @param isLabelSelectorOpen Whether the label selector row is expanded.
- * @param isLabelListLoading Whether the label list is being fetched.
- * @param editingContent Current text value while in edit mode.
- * @param mapCameraFocus Camera focus position for the map.
- * @param mapMarkerList List of markers to display on the map.
- * @param onContentChange Callback invoked when the user modifies the memo text.
- * @param onNotificationToggle Callback invoked when the notification toggle is tapped.
- * @param onLabelChipClick Callback invoked when the label chip is tapped in edit mode.
- * @param onLabelSelect Callback invoked when the user selects a label from the selector.
+ * @param isLabelSelectorOpen Whether the label selector is visible.
+ * @param isLabelListLoading Whether the label list is loading.
+ * @param editingContent Current content value while editing.
+ * @param onContentChange Callback invoked when memo content changes.
+ * @param onNotificationToggle Callback invoked when notification state toggles.
+ * @param onLabelChipClick Callback invoked when the label chip is tapped.
+ * @param onLabelSelect Callback invoked when a label is selected.
  */
 @Composable
 private fun MapmoContent(
@@ -321,18 +317,22 @@ private fun MapmoContent(
 // ——— Content Section —————————————————————————————————————
 
 /**
- * Displays the label chip, optional label selector, timestamp,
- * notification toggle, and memo text card.
+ * Displays memo related UI including label chip, label selector,
+ * updated time, notification toggle, and the memo content card.
  *
- * @param mapmo Mapmo data containing content, timestamp, and notification state.
- * @param label Currently associated label. Hidden if null.
+ * @param content Mapmo memo content. May be null if empty.
+ * @param updatedAt Last updated timestamp (epoch seconds).
+ * @param isNotifyEnabled Whether notification is enabled.
+ * @param currentLabelID Currently selected label ID.
+ * @param labelName Name of the associated label.
+ * @param labelColor Color string of the associated label.
  * @param labelList Labels available in the selector.
- * @param isEditing Whether the screen is in edit mode.
+ * @param isEditing Whether the screen is currently in edit mode.
  * @param isLabelSelectorOpen Whether the label selector is expanded.
- * @param isLabelListLoading Whether the label list is being fetched.
- * @param editingContent Current text value while in edit mode.
- * @param onContentChange Callback invoked when the memo text changes.
- * @param onNotificationToggle Callback invoked when the notification toggle is tapped.
+ * @param isLabelListLoading Whether the label list is loading.
+ * @param editingContent Current text value while editing.
+ * @param onContentChange Callback invoked when memo text changes.
+ * @param onNotificationToggle Callback invoked when notification state toggles.
  * @param onLabelChipClick Callback invoked when the label chip is tapped.
  * @param onLabelSelect Callback invoked when a label is selected.
  */
@@ -447,8 +447,10 @@ private fun ContentCard(
 }
 
 /**
- * Displays the last updated timestamp formatted for Korean locale.
- * Uses [remember] to avoid reformatting on every recomposition.
+ * Displays the formatted last updated timestamp.
+ *
+ * Uses [remember] to avoid recomputing the formatted string
+ * on every recomposition.
  *
  * @param updatedAt Unix epoch seconds representing the last update time.
  */
@@ -468,12 +470,13 @@ private fun UpdatedAtText(updatedAt: Long) {
 }
 
 /**
- * Row containing a checkbox for toggling notification state.
- * Click area spans the entire row to improve touch target size.
+ * Displays a checkbox row used to toggle notification state.
  *
- * @param isEnabled Current notification enabled state.
+ * The entire row is clickable to improve touch target usability.
+ *
+ * @param isEnabled Current notification state.
  * @param onToggle Callback invoked when the row is tapped.
- * @param modifier Optional [Modifier] to apply to the row.
+ * @param modifier Optional [Modifier] applied to the row.
  */
 @Composable
 private fun NotificationRow(
@@ -496,10 +499,12 @@ private fun NotificationRow(
 // ——— Label ———————————————————————————————————————————————
 
 /**
- * Displays a pill-shaped chip with a color dot and label name.
- * Highlights with a border and darker background when selected.
+ * Displays a pill-shaped chip representing a label.
  *
- * @param label [Label] data to display.
+ * Shows a colored dot and label name, and highlights when selected.
+ *
+ * @param labelName Label name to display.
+ * @param labelColor Label color string used for the chip.
  * @param isSelected Whether this chip is currently selected.
  * @param onClick Callback invoked when tapped. Null makes the chip non-interactive.
  */
@@ -549,14 +554,15 @@ private fun LabelChip(
 }
 
 /**
- * Horizontally scrollable label selector shown in edit mode.
- * Displays a loading indicator while fetching, a fallback message if empty,
- * or the full list with the current label highlighted.
+ * Horizontally scrollable label selector used in edit mode.
+ *
+ * Displays loading state, empty state, or the full label list
+ * with the currently selected label highlighted.
  *
  * @param labelList All available labels.
- * @param isLoading Whether the label list is being fetched.
- * @param currentLabel Currently selected label, used for highlight.
- * @param onLabelSelect Callback invoked when the user taps a label chip.
+ * @param isLoading Whether the label list is currently loading.
+ * @param currentLabelID Currently selected label ID used for highlighting.
+ * @param onLabelSelect Callback invoked when a label is selected.
  */
 @Composable
 private fun LabelSelector(
