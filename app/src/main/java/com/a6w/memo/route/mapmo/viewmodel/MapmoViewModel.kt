@@ -8,6 +8,7 @@ import com.a6w.memo.common.model.MapCameraFocusData
 import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.Mapmo
+import com.a6w.memo.domain.repository.GeofenceRepository
 import com.a6w.memo.domain.repository.LabelRepository
 import com.a6w.memo.domain.repository.MapmoRepository
 import com.a6w.memo.navigation.MapmoNavRoute
@@ -28,6 +29,7 @@ class MapmoViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val mapmoRepository: MapmoRepository,
     private val labelRepository: LabelRepository,
+    private val geofenceRepository: GeofenceRepository,
 ) : ViewModel() {
 
     companion object {
@@ -226,8 +228,9 @@ class MapmoViewModel @Inject constructor(
             if(currentMapmo == null) return@launch
             val currentNotification = currentMapmo?.isNotifyEnabled ?: return@launch
 
+            val isNotifyEnabled = !currentNotification
             val updatedMapmo = currentMapmo?.copy(
-                isNotifyEnabled = !currentNotification
+                isNotifyEnabled = isNotifyEnabled
             )
 
             if(updatedMapmo == null) return@launch
@@ -246,6 +249,15 @@ class MapmoViewModel @Inject constructor(
                     )
                 }
             } else {
+                // Register to Geofencing Service
+                val mapmoID = updatedMapmo.mapmoID
+                if(isNotifyEnabled) {
+                    val location = currentLabel!!.location
+                    geofenceRepository.registerGeofence(mapmoID, location)
+                } else {
+                    geofenceRepository.unregisterGeofence(mapmoID)
+                }
+
                 _uiState.update {
                     it.copy(
                         isNotifyEnabled = !currentNotification,

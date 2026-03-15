@@ -8,6 +8,7 @@ import com.a6w.memo.domain.repository.LabelRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
 /**
  * LabelRepositoryImpl
@@ -23,7 +24,7 @@ import kotlinx.coroutines.tasks.await
  * - Delete label
  *
  **/
-class LabelRepositoryImpl: LabelRepository {
+class LabelRepositoryImpl @Inject constructor(): LabelRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val labelCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL) }
 

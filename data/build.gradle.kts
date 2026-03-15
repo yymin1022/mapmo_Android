@@ -22,8 +22,10 @@ kotlin {
 dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
+    implementation(libs.play.services.location)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.javax.inject)
     implementation(project(":domain"))
+    implementation(libs.androidx.work.runtime.ktx)
 }

@@ -9,6 +9,7 @@ import com.a6w.memo.domain.model.MapmoListItem
 import com.a6w.memo.domain.repository.MapmoListRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 import kotlin.collections.mutableMapOf
 
 /**
@@ -23,7 +24,7 @@ import kotlin.collections.mutableMapOf
  * - Build and return a MapmoList domain model
  * - Cache the result to avoid redundant server calls
  */
-class MapmoListRepositoryImpl: MapmoListRepository {
+class MapmoListRepositoryImpl @Inject constructor(): MapmoListRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val mapmoCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO) }
     private val labelCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_LABEL) }
