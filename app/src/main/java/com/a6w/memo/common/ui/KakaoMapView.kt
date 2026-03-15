@@ -155,6 +155,9 @@ private fun addMarkers(
     val layer = labelManager?.layer ?: return
     val markerList = markers ?: return
 
+    // Remove all labels
+    layer.removeAll()
+
     // Marker groups by same locations
     val groupedMarkers = markerList.groupBy {
         LatLng.from(it.latitude.toDouble(), it.longitude.toDouble())
