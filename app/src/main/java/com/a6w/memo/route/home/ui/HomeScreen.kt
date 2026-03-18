@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -32,6 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.a6w.memo.domain.model.Mapmo
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.a6w.memo.common.util.FirebaseLogUtil
 import com.a6w.memo.route.home.ui.model.HomeListUiItem
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -52,6 +56,23 @@ fun HomeScreen(
     navigateToMapmo: (mapmoID: String?) -> Unit,
     navigateToSetting: () -> Unit,
 ) {
+    // Load mapmo list by lifecycle callback
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            // On Resume Event
+            if(event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadMapmo()
+            }
+        }
+
+        // Add / Remove Lifecycle observer
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     // Bottom Sheet state
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState()
