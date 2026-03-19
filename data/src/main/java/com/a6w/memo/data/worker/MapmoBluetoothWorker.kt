@@ -21,11 +21,11 @@ class MapmoBluetoothWorker(
 ) : CoroutineWorker(context, params) {
     companion object {
         // TODO: BLE Device MAC Address
-        private const val BLE_DEVICE_MAC_ADDRESS = ""
+        private const val BLE_DEVICE_MAC_ADDRESS = "68:FE:71:0C:49:9A"
 
         // TODO: BLE Service / Characteristic UUID
-        val SERVICE_UUID: UUID = UUID.fromString("0000XXXX-0000-1000-8000-00805f9b34fb")
-        val CHAR_UUID: UUID = UUID.fromString("0000YYYY-0000-1000-8000-00805f9b34fb")
+        val SERVICE_UUID: UUID = UUID.fromString("59462f12-9543-9999-12c8-58b459a2712d")
+        val CHAR_UUID: UUID = UUID.fromString("33333333-2222-2222-1111-111100000000")
     }
 
     override suspend fun doWork(): Result {
