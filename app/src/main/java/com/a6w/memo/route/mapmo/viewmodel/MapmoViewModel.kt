@@ -43,7 +43,6 @@ class MapmoViewModel @Inject constructor(
     // Domain state for the current Mapmo and Label
     private var currentMapmo: Mapmo? = null
     private var currentLabel: Label? = null
-    var isEditing: Boolean = false
     private val _uiState = MutableStateFlow(MapmoUiState())
     val uiState: StateFlow<MapmoUiState> = _uiState.asStateFlow()
 
