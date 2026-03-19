@@ -9,6 +9,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.a6w.memo.common.util.FirebaseLogUtil
+import com.a6w.memo.data.worker.MapmoBluetoothWorker
 import com.a6w.memo.data.worker.MapmoNotificationWorker
 import com.a6w.memo.data.worker.WorkerDefs
 import com.google.android.gms.location.Geofence
@@ -50,6 +51,7 @@ class GeofencingReceiver: BroadcastReceiver() {
                 // Run notification worker for each triggered geofence
                 triggeringGeofences.forEach { geofence ->
                     val mapmoID = geofence.requestId
+                    enqueueBluetoothWork(context, mapmoID)
                     enqueueNotificationWork(context, mapmoID)
                 }
             }
@@ -58,6 +60,24 @@ class GeofencingReceiver: BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_EXIT,
             Geofence.GEOFENCE_TRANSITION_DWELL -> {}
         }
+    }
+
+    private fun enqueueBluetoothWork(context: Context, mapmoID: String) {
+        val workRequest = OneTimeWorkRequestBuilder<MapmoBluetoothWorker>()
+            .setInputData(
+                workDataOf(
+                    WorkerDefs.KEY_WORKER_INPUT_MEMO_ID to mapmoID,
+                    WorkerDefs.KEY_WORKER_INPUT_USER_ID to TEST_USER_ID,
+                )
+            )
+            // Network connection is required
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build())
+            .build()
+
+        WorkManager.getInstance(context).enqueue(workRequest)
     }
 
     private fun enqueueNotificationWork(context: Context, mapmoID: String) {
