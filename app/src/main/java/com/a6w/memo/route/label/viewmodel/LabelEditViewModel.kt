@@ -36,7 +36,7 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class)
 class LabelEditViewModel @Inject constructor(
     private val labelRepository: LabelRepository,
-) : ViewModel() {
+): ViewModel() {
 
     companion object {
         private const val TEST_USER_ID = "test_user_1"
@@ -54,6 +54,15 @@ class LabelEditViewModel @Inject constructor(
         RetrofitRepositoryFactory.createAddressSearchRepository(
             apiKey = BuildConfig.KAKAO_REST_API_KEY,
         )
+    private var currentLabel = Label(
+        id = UUID.randomUUID().toString(),
+        name = "",
+        color = "",
+        location = Location(-1.0, -1.0),
+    )
+
+    // Flag to distinguish between add and update
+    private var isEditMode = false
 
     init {
         observeSearchQuery()
@@ -67,7 +76,7 @@ class LabelEditViewModel @Inject constructor(
      */
     fun initialize(labelID: String?) {
         if (labelID == null) return
-
+        isEditMode = true
         viewModelScope.launch {
 
             _uiState.update {
@@ -94,6 +103,7 @@ class LabelEditViewModel @Inject constructor(
             val labelName = label.name
             val labelColor = label.color
             val labelLocation = label.location
+            currentLabel = label
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -113,6 +123,7 @@ class LabelEditViewModel @Inject constructor(
      * @param name New name value entered by the user.
      */
     fun updateName(name: String) {
+        currentLabel = currentLabel.copy(name = name)
         _uiState.update {
             it.copy(name = name)
         }
@@ -124,6 +135,7 @@ class LabelEditViewModel @Inject constructor(
      * @param hexColor Hex color string (e.g. "#FF5733").
      */
     fun updateColor(hexColor: String) {
+        currentLabel = currentLabel.copy(color = hexColor)
         _uiState.update {
             it.copy(color = hexColor)
         }
@@ -137,7 +149,7 @@ class LabelEditViewModel @Inject constructor(
      */
     fun updateSearchQuery(query: String) {
 
-        _searchQuery.value = query
+        _searchQuery.update { query }
         if (query.length < SEARCH_MIN_LENGTH) {
             _uiState.update { it.copy(searchResults = emptyList()) }
         }
@@ -158,6 +170,7 @@ class LabelEditViewModel @Inject constructor(
             lat = addressLat,
             lng = addressLng,
         )
+        currentLabel = currentLabel.copy(location = location)
         val latFloat = addressLat.toFloat()  // precision loss: Double → Float intentional
         val lngFloat = addressLng.toFloat()  // precision loss: Double → Float intentional
 
@@ -179,7 +192,7 @@ class LabelEditViewModel @Inject constructor(
         val addressFullAddress = address.fullAddress
 
         _isAddressSelected = true
-        _searchQuery.value = addressName
+        _searchQuery.update { addressName }
         _uiState.update {
             it.copy(
                 selectedLocation = location,
@@ -197,7 +210,7 @@ class LabelEditViewModel @Inject constructor(
      */
     fun clearSearch() {
         _isAddressSelected = false
-        _searchQuery.value = ""
+        _searchQuery.update { "" }
         _uiState.update { it.copy(searchResults = emptyList()) }
     }
 
@@ -209,7 +222,7 @@ class LabelEditViewModel @Inject constructor(
      */
     fun saveLabel(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val state = _uiState.value
+            val state = currentLabel
 
             if (state.name.isBlank()) {
                 _uiState.update {
@@ -218,7 +231,7 @@ class LabelEditViewModel @Inject constructor(
                 return@launch
             }
 
-            val location = state.selectedLocation
+            val location = state.location
             if (location == null) {
                 _uiState.update {
                     it.copy(errorMessage = "위치를 선택해주세요")
@@ -232,23 +245,24 @@ class LabelEditViewModel @Inject constructor(
                     errorMessage = null,
                 )
             }
-            val labelID = state.labelID
+            val labelID = state.id
             val label = Label(
                 id = labelID ?: UUID.randomUUID().toString(),
                 name = state.name,
                 color = state.color,
                 location = location,
             )
-            val success = if (labelID == null) {
+            // Dispatch to add or update based on whether the screen was initialized with an existing label.
+            val success = if (isEditMode) {
+                labelRepository.updateLabel(
+                    labelID = state.id,
+                    labelContent = label,
+                    userID = TEST_USER_ID,
+                )
+            } else {
                 labelRepository.addLabel(
                     userID = TEST_USER_ID,
                     labelContent = label,
-                )
-            } else {
-                labelRepository.updateLabel(
-                    labelID = state.labelID,
-                    labelContent = label,
-                    userID = TEST_USER_ID,
                 )
             }
 
