@@ -21,15 +21,14 @@ import kotlin.collections.set
  * - Maintain an in-memory cache for individual Mapmo items
  *
  */
-class MapmoRepositoryImpl @Inject constructor(): MapmoRepository {
+class MapmoRepositoryImpl @Inject constructor(
+    private val mapmoListRepositoryImpl: MapmoListRepository,
+): MapmoRepository {
     private val firestoreDB = FirebaseFirestore.getInstance()
     private val mapmoCollection by lazy { firestoreDB.collection(FirestoreKey.COLLECTION_KEY_MAPMO) }
 
     // Cache for individual Mapmo (key: mapmoID)
     private val mapmoCache = mutableMapOf<String, Mapmo>()
-
-    // Used to invalidate Mapmo list cache when data changes
-    private val mapmoListRepositoryImpl: MapmoListRepository = MapmoListRepositoryImpl()
 
     /**
      * Retrieves a single Mapmo by ID.
