@@ -56,6 +56,7 @@ fun HomeScreen(
             HomeNormal(
                 modifier = modifier,
                 uiState = uiState,
+                deleteMapmo = viewModel::deleteMapmo,
                 moveMapCamera = viewModel::moveMapCameraToLabel,
                 navigateToMapmo = navigateToMapmo,
                 toggleMapmoNotify = viewModel::toggleMapmoNotify,

@@ -25,9 +25,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -56,6 +60,7 @@ private val BOTTOM_SHEET_RADIUS_DP = 16.dp
 fun HomeNormal(
     modifier: Modifier = Modifier,
     uiState: HomeUiState.Normal,
+    deleteMapmo: (mapmoID: String) -> Unit,
     moveMapCamera: (labelID: String) -> Unit,
     navigateToMapmo: (mapmoID: String?) -> Unit,
     toggleMapmoNotify: (mapmoID: String) -> Unit,
@@ -119,6 +124,7 @@ fun HomeNormal(
                     onClickMapmo = navigateToMapmo,
                     onClickMapmoNotify = toggleMapmoNotify,
                     onScrollMapmoList = moveMapCamera,
+                    onSwipeMapmo = deleteMapmo,
                 )
             },
         ) { paddingValues ->
@@ -163,6 +169,7 @@ private fun MapmoList(
     onClickMapmo: (mapmoID: String?) -> Unit,
     onClickMapmoNotify: (mapmoID: String) -> Unit,
     onScrollMapmoList: (labelID: String) -> Unit,
+    onSwipeMapmo: (mapmoID: String) -> Unit,
 ) {
     // Exception when data list is null
     if(dataList == null) return
@@ -221,14 +228,35 @@ private fun MapmoList(
                     val mapmoUpdatedAt = targetItem.mapmoUpdatedAt
                     val mapmoIsNotifyEnabled = targetItem.mapmoIsNotifyEnabled
 
-                    MapmoItem(
-                        modifier = Modifier,
-                        mapmoTitle = mapmoTitle,
-                        mapmoUpdatedAt = mapmoUpdatedAt,
-                        mapmoIsNotifyEnabled = mapmoIsNotifyEnabled,
-                        onClick = { onClickMapmo(mapmoID) },
-                        onClickNotifyIcon = { onClickMapmoNotify(mapmoID) },
+                    // Dismiss state for Mapmo Item
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+                            // If value is swipe, run callback method
+                            when(value) {
+                                SwipeToDismissBoxValue.StartToEnd,
+                                SwipeToDismissBoxValue.EndToStart -> {
+                                    onSwipeMapmo(mapmoID)
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
                     )
+
+                    // Mapmo Item is wrapped with Dismiss Box
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {},
+                    ) {
+                        MapmoItem(
+                            modifier = Modifier,
+                            mapmoTitle = mapmoTitle,
+                            mapmoUpdatedAt = mapmoUpdatedAt,
+                            mapmoIsNotifyEnabled = mapmoIsNotifyEnabled,
+                            onClick = { onClickMapmo(mapmoID) },
+                            onClickNotifyIcon = { onClickMapmoNotify(mapmoID) },
+                        )
+                    }
                 }
             }
         }
