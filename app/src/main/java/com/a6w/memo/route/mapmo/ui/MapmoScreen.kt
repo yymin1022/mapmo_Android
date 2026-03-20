@@ -129,7 +129,10 @@ fun MapmoScreen(
         }
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier.fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
+    ) {
         MapmoTopBar(
             isAddMode = isAddMode,
             isEditing = isEditing,
@@ -327,7 +330,10 @@ private fun MapmoContent(
     onLabelSelect: (Label) -> Unit,
     onAddLabelClick: () -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier.fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(modifier = Modifier.weight(1f)) {
             item {
                 ContentSection(
@@ -476,8 +482,8 @@ private fun ContentCard(
                     lineHeight = CONTENT_LINE_HEIGHT_SP,
                 ),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
