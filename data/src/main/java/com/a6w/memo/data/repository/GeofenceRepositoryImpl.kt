@@ -23,7 +23,7 @@ class GeofenceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun registerGeofence(
-        mapmoID: String,
+        labelID: String,
         location: Location,
     ): Result<Unit> = runCatching {
         // Location Info
@@ -32,14 +32,15 @@ class GeofenceRepositoryImpl @Inject constructor(
 
         // Generate Geofence
         val geofence = Geofence.Builder()
-            // Request ID is same as Mapmo ID
-            .setRequestId(mapmoID)
+            // Request ID is same as Label ID
+            .setRequestId(labelID)
             // Set location info
             .setCircularRegion(lat, lng, DEFAULT_GEOFENCE_RADIUS)
             // Set as do not expire geofence request
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            // Callback only when enter
+            // Callback only when enter, exit
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
             .build()
 
         // Generate Geofence Request
@@ -54,9 +55,9 @@ class GeofenceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun unregisterGeofence(
-        mapmoID: String,
+        labelID: String,
     ): Result<Unit> = runCatching {
         // Remove Geofence Request from Client by ID
-        geofencingClient.removeGeofences(listOf(mapmoID)).await()
+        geofencingClient.removeGeofences(listOf(labelID)).await()
     }
 }

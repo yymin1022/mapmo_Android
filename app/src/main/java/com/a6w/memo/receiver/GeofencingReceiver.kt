@@ -50,9 +50,9 @@ class GeofencingReceiver: BroadcastReceiver() {
 
                 // Run notification worker for each triggered geofence
                 triggeringGeofences.forEach { geofence ->
-                    val mapmoID = geofence.requestId
-                    enqueueBluetoothWork(context, mapmoID)
-                    enqueueNotificationWork(context, mapmoID)
+                    val labelID = geofence.requestId
+                    enqueueBluetoothWork(context, labelID)
+                    enqueueNotificationWork(context, labelID)
                 }
             }
 
@@ -62,11 +62,11 @@ class GeofencingReceiver: BroadcastReceiver() {
         }
     }
 
-    private fun enqueueBluetoothWork(context: Context, mapmoID: String) {
+    private fun enqueueBluetoothWork(context: Context, labelID: String) {
         val workRequest = OneTimeWorkRequestBuilder<MapmoBluetoothWorker>()
             .setInputData(
                 workDataOf(
-                    WorkerDefs.KEY_WORKER_INPUT_MEMO_ID to mapmoID,
+                    WorkerDefs.KEY_WORKER_INPUT_LABEL_ID to labelID,
                     WorkerDefs.KEY_WORKER_INPUT_USER_ID to TEST_USER_ID,
                 )
             )
@@ -80,11 +80,11 @@ class GeofencingReceiver: BroadcastReceiver() {
         WorkManager.getInstance(context).enqueue(workRequest)
     }
 
-    private fun enqueueNotificationWork(context: Context, mapmoID: String) {
+    private fun enqueueNotificationWork(context: Context, labelID: String) {
         val workRequest = OneTimeWorkRequestBuilder<MapmoNotificationWorker>()
             .setInputData(
                 workDataOf(
-                    WorkerDefs.KEY_WORKER_INPUT_MEMO_ID to mapmoID,
+                    WorkerDefs.KEY_WORKER_INPUT_LABEL_ID to labelID,
                     WorkerDefs.KEY_WORKER_INPUT_USER_ID to TEST_USER_ID,
                 )
             )

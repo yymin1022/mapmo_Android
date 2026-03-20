@@ -8,7 +8,7 @@ import com.a6w.memo.data.worker.MapmoBluetoothWorker
 import com.a6w.memo.data.worker.MapmoNotificationWorker
 import com.a6w.memo.domain.repository.BleRepository
 import com.a6w.memo.domain.repository.LabelRepository
-import com.a6w.memo.domain.repository.MapmoRepository
+import com.a6w.memo.domain.repository.MapmoListRepository
 import com.a6w.memo.domain.service.MapmoNotificationService
 import javax.inject.Inject
 import kotlin.jvm.java
@@ -20,7 +20,7 @@ import kotlin.jvm.java
 class MapmoWorkerFactory @Inject constructor(
     private val bleRepository: BleRepository,
     private val labelRepository: LabelRepository,
-    private val mapmoRepository: MapmoRepository,
+    private val mapmoListRepository: MapmoListRepository,
     private val notificationService: MapmoNotificationService
 ): WorkerFactory() {
     // Create Mapmo Notification Worker
@@ -37,7 +37,7 @@ class MapmoWorkerFactory @Inject constructor(
                     context = appContext,
                     params = workerParameters,
                     labelRepository = labelRepository,
-                    mapmoRepository = mapmoRepository,
+                    mapmoListRepository = mapmoListRepository,
                     notificationService = notificationService,
                 )
             }
@@ -47,7 +47,7 @@ class MapmoWorkerFactory @Inject constructor(
                     context = appContext,
                     params = workerParameters,
                     labelRepository = labelRepository,
-                    mapmoRepository = mapmoRepository,
+                    mapmoListRepository = mapmoListRepository,
                     bleRepository = bleRepository,
                 )
             }
