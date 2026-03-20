@@ -2,6 +2,7 @@ package com.a6w.memo.route.home.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.a6w.memo.common.def.ErrorMessageDef
 import com.a6w.memo.common.model.MapCameraFocusData
 import com.a6w.memo.common.model.MapMarkerData
 import com.a6w.memo.common.util.DatetimeUtil
@@ -51,7 +52,7 @@ class HomeViewModel @Inject constructor(
                 // Set ui state as Error and return
                 _uiState.update {
                     HomeUiState.Error(
-                        errMessage = "Mapmo를 불러오는데 실패하였습니다.",
+                        errMessage = ErrorMessageDef.HOME_MAPMO_LOAD_FAIL,
                     )
                 }
                 return@launch
