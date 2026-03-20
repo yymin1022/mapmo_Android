@@ -2,7 +2,7 @@ package com.a6w.memo
 
 import android.app.Application
 import androidx.work.Configuration
-import com.a6w.memo.common.factory.MapmoNotificationWorkerFactory
+import com.a6w.memo.common.factory.MapmoWorkerFactory
 import com.a6w.memo.common.util.KakaoMapUtil
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -13,7 +13,7 @@ class MapmoApplication: Application(), Configuration.Provider {
     // - Inject by Hilt
     // - Generate worker configuration
     @Inject
-    lateinit var workerFactory: MapmoNotificationWorkerFactory
+    lateinit var workerFactory: MapmoWorkerFactory
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
