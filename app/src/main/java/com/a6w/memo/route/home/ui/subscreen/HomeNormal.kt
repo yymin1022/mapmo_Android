@@ -6,15 +6,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -215,11 +219,13 @@ private fun MapmoList(
                     val mapmoID = targetItem.mapmoID
                     val mapmoTitle = targetItem.mapmoTitle
                     val mapmoUpdatedAt = targetItem.mapmoUpdatedAt
+                    val mapmoIsNotifyEnabled = targetItem.mapmoIsNotifyEnabled
 
                     MapmoItem(
                         modifier = Modifier,
                         mapmoTitle = mapmoTitle,
                         mapmoUpdatedAt = mapmoUpdatedAt,
+                        mapmoIsNotifyEnabled = mapmoIsNotifyEnabled,
                         onClick = { onClickMapmo(mapmoID) },
                     )
                 }
@@ -279,24 +285,44 @@ private fun MapmoItem(
     modifier: Modifier = Modifier,
     mapmoTitle: String,
     mapmoUpdatedAt: String,
+    mapmoIsNotifyEnabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Column(
+    // Set notification icon based on enabled state
+    val notificationIcon = if(mapmoIsNotifyEnabled) {
+        Icons.Default.Notifications
+    } else {
+        Icons.Default.NotificationsNone
+    }
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        // Mapmo Title Text
-        Text(
-            text = mapmoTitle,
-            fontSize = 18.sp,
-        )
+        Column(
+            modifier = modifier
+                .weight(1f),
+        ) {
+            // Mapmo Title Text
+            Text(
+                text = mapmoTitle,
+                fontSize = 18.sp,
+            )
 
-        // Mapmo Date Text
-        Text(
-            text = mapmoUpdatedAt,
-            fontSize = 14.sp,
+            // Mapmo Date Text
+            Text(
+                text = mapmoUpdatedAt,
+                fontSize = 14.sp,
+            )
+        }
+
+        // Mapmo notification on/off button
+        Icon(
+            imageVector = notificationIcon,
+            contentDescription = null,
         )
     }
+
 }
