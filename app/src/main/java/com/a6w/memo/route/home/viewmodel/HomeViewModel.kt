@@ -31,30 +31,40 @@ class HomeViewModel @Inject constructor(
     }
 
     // UI State variable
-    private val _uiState = MutableStateFlow(HomeUiState())
+    // - Init state is Loading
+    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Mapmo List
+    // Mapmo List instance
     private var mapmoList: MapmoList? = null
 
     /**
-     * Load mapmo from repository, and update as state
+     * Load mapmo list from repository, and update as state
      */
-    fun loadMapmo() {
+    fun loadMapmoList() {
         viewModelScope.launch {
             // Initialize mapmo list state
             mapmoList = getMapmoList()
 
-            // Generate List UI Items
+            // Error handling
+            if(mapmoList == null) {
+                // Set ui state as Error and return
+                _uiState.update {
+                    HomeUiState.Error(
+                        errMessage = "Mapmo를 불러오는데 실패하였습니다.",
+                    )
+                }
+                return@launch
+            }
+
+            // Generate UI Model List
             val dataList = buildList {
                 mapmoList?.list?.forEach { mapmoGroup ->
-                    val labelItem = mapmoGroup.labelItem
-                    if(labelItem == null) return@forEach
+                    // If label is null, mapmo group is unavailable (Rule)
+                    val labelItem = mapmoGroup.labelItem ?: return@forEach
 
                     // Label Item
-                    labelItem.let { label ->
-                        add(label.toUiItem())
-                    }
+                    add(labelItem.toUiItem())
 
                     // Each Mapmo Items
                     mapmoGroup.mapmoList.forEach { mapmo ->
@@ -66,15 +76,15 @@ class HomeViewModel @Inject constructor(
             // Generate Map marker list
             val mapMarkerList = getMapMarkerList(mapmoList)
 
-            // Update UI State
+            // Set UI State as Normal
             _uiState.update {
-                it.copy(
+                HomeUiState.Normal(
                     dataList = dataList,
                     mapMarkerList = mapMarkerList,
                 )
             }
 
-            // Move camera focus to first label
+            // Move map camera focus to first label
             mapmoList?.list
                 ?.firstOrNull()?.labelItem
                 ?.let {
@@ -90,11 +100,10 @@ class HomeViewModel @Inject constructor(
     fun moveMapCameraToLabel(labelID: String) {
         viewModelScope.launch {
             // Get target label
+            // - If label is null, cannot move camera
             val targetLabel = mapmoList?.list?.firstOrNull { item ->
                 item.labelItem?.id == labelID
-            }?.labelItem
-
-            if(targetLabel == null) return@launch
+            }?.labelItem ?: return@launch
 
             // Get label location info
             val labelLocation = targetLabel.location
@@ -108,17 +117,22 @@ class HomeViewModel @Inject constructor(
             )
 
             // Update as UI State
+            // - Camera cannot be updated if UI State is not Normal
             _uiState.update {
-                it.copy(
-                    mapCameraFocus = cameraFocusData,
-                )
+                when(it) {
+                    is HomeUiState.Normal -> {
+                        it.copy(
+                            mapCameraFocus = cameraFocusData,
+                        )
+                    }
+                    else -> { it }
+                }
             }
         }
-
     }
 
     /**
-     * Get mapmo list instance and save as ui state
+     * Get mapmo list from repository and return it
      */
     private suspend fun getMapmoList(): MapmoList? {
         // Get mapmo list from repository
@@ -144,11 +158,13 @@ class HomeViewModel @Inject constructor(
      * Convert [Label] to [MapMarkerData]
      */
     private fun Label.toMapMarkerData(): MapMarkerData {
+        // Label Data
         val labelTitle = this.name
         val labelLocation = this.location
         val labelLocationLat = labelLocation.lat.toFloat()
         val labelLocationLng = labelLocation.lng.toFloat()
 
+        // Generate Map Marker Data model
         return MapMarkerData(
             latitude = labelLocationLat,
             longitude = labelLocationLng,
@@ -160,10 +176,12 @@ class HomeViewModel @Inject constructor(
      * Convert [Label] to [HomeListUiItem.LabelUiItem]
      */
     private fun Label.toUiItem(): HomeListUiItem.LabelUiItem {
+        // Label Data
         val labelColor = this.color
         val labelID = this.id
         val labelName = this.name
 
+        // Generate Label UI model
         return HomeListUiItem.LabelUiItem(
             labelColor = labelColor,
             labelID = labelID,
@@ -175,11 +193,15 @@ class HomeViewModel @Inject constructor(
      * Convert [Mapmo] to [HomeListUiItem.MapmoUiItem]
      */
     private fun Mapmo.toUiItem(label: Label): HomeListUiItem.MapmoUiItem {
+        // Mapmo Data
         val mapmoID = this.mapmoID
         val mapmoTitle = this.title
         val mapmoUpdatedAt = DatetimeUtil.getUiDateStringFromMillis(this.updatedAt * 1000)
 
+        // Label Data
         val labelLocation = label.location
+
+        // Generate Mapmo UI model
         return HomeListUiItem.MapmoUiItem(
             mapmoID = mapmoID,
             mapmoLocation = labelLocation,
