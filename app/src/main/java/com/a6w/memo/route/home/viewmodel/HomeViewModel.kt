@@ -50,14 +50,11 @@ class HomeViewModel @Inject constructor(
      */
     fun loadMapmoList() {
         viewModelScope.launch {
-            // Set UI STate as Loading
-            _uiState.update { HomeUiState.Loading }
-
             // Initialize mapmo list state
-            mapmoList = getMapmoList()
+            val updatedMapmoList = getMapmoList()
 
             // Error handling
-            if(mapmoList == null) {
+            if(updatedMapmoList == null) {
                 // Set ui state as Error and return
                 _uiState.update {
                     HomeUiState.Error(
@@ -66,6 +63,12 @@ class HomeViewModel @Inject constructor(
                 }
                 return@launch
             }
+
+            // If instance is same as prev instance, do nothing
+            if(mapmoList == updatedMapmoList) return@launch
+
+            // Set updated mapmo list
+            mapmoList = updatedMapmoList
 
             // Generate UI Model List
             val dataList = buildList {
