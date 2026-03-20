@@ -56,6 +56,9 @@ fun HomeNormal(
         bottomSheetState = rememberStandardBottomSheetState()
     )
 
+    // Scaffold UI with Bottom Sheet
+    // - UI Background: KakaoMap View
+    // - Bottom Sheet Content: Mapmo List UI
     BottomSheetScaffold(
         modifier = modifier,
         scaffoldState = scaffoldState,
@@ -67,24 +70,20 @@ fun HomeNormal(
         ),
         sheetContent = {
             // Mapmo List
-            Box(
+            MapmoList(
                 modifier = Modifier
                     .fillMaxHeight(0.5f)
-                    .fillMaxWidth()
-            ) {
-                MapmoList(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    dataList = dataList,
-                    onClickMapmo = navigateToMapmo,
-                    onScrollMapmoList = moveMapCamera,
-                )
-            }
+                    .fillMaxWidth(),
+                dataList = dataList,
+                onClickMapmo = navigateToMapmo,
+                onScrollMapmoList = moveMapCamera,
+            )
         },
     ) {
         // Mapmo Map
         MapmoMap(
-            modifier = Modifier,
+            modifier = Modifier
+                .fillMaxSize(),
             mapCameraFocus = mapCameraFocus,
             mapMarkerList = mapMarkerList
         )
@@ -93,6 +92,7 @@ fun HomeNormal(
 
 /**
  * Mapmo Map
+ * - Show map markers on [KakaoMapView]
  */
 @Composable
 private fun MapmoMap(
@@ -100,16 +100,13 @@ private fun MapmoMap(
     mapCameraFocus: MapCameraFocusData? = null,
     mapMarkerList: List<MapMarkerData>? = null,
 ) {
-    Box(
-        modifier = modifier,
-    ) {
-        KakaoMapView(
-            modifier = Modifier
-                .fillMaxSize(),
-            cameraFocus = mapCameraFocus,
-            markers = mapMarkerList,
-        )
-    }
+    // KakaoMap View
+    KakaoMapView(
+        modifier = modifier
+            .fillMaxSize(),
+        cameraFocus = mapCameraFocus,
+        markers = mapMarkerList,
+    )
 }
 
 /**
@@ -122,6 +119,7 @@ private fun MapmoList(
     onClickMapmo: (mapmoID: String?) -> Unit,
     onScrollMapmoList: (labelID: String) -> Unit,
 ) {
+    // Exception when data list is null
     if(dataList == null) return
 
     // List state for mapmo list
@@ -142,21 +140,24 @@ private fun MapmoList(
                         onScrollMapmoList(labelID)
                     }
 
+                    // Mapmo items are not scroll target. ignore.
                     else -> {}
                 }
             }
     }
 
+    // Column for label, mapmo list
     LazyColumn(
         modifier = modifier,
         state = listState,
     ) {
-        // Add each items to UI
+        // Add each item to UI
         // - Items might be Label or Mapmo
         items(dataList.size) { idx ->
             when(val targetItem = dataList[idx]) {
                 // Label Item
                 is HomeListUiItem.LabelUiItem -> {
+                    // Label data
                     val labelColor = targetItem.labelColor
                     val labelName = targetItem.labelName
 
@@ -169,6 +170,7 @@ private fun MapmoList(
 
                 // Mapmo Item
                 is HomeListUiItem.MapmoUiItem -> {
+                    // Mapmo data
                     val mapmoID = targetItem.mapmoID
                     val mapmoTitle = targetItem.mapmoTitle
                     val mapmoUpdatedAt = targetItem.mapmoUpdatedAt
@@ -208,6 +210,7 @@ private fun LabelItem(
             .padding(top = 16.dp)
             .padding(horizontal = 16.dp),
     ) {
+        // Label Name Text
         Text(
             text = labelName,
             color = labelColor,
@@ -226,7 +229,6 @@ private fun MapmoItem(
     mapmoUpdatedAt: String,
     onClick: () -> Unit,
 ) {
-
     Column(
         modifier = modifier
             .fillMaxWidth()
