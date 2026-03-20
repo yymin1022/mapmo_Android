@@ -78,6 +78,11 @@ class HomeViewModel @Inject constructor(
 
                     // Each Mapmo Items
                     mapmoGroup.mapmoList.forEach { mapmo ->
+                        if(mapmo.isNotifyEnabled) {
+                            geofenceRepository.unregisterGeofence(labelItem.id)
+                            geofenceRepository.registerGeofence(labelItem.id, labelItem.location)
+                        }
+
                         add(mapmo.toUiItem(labelItem))
                     }
                 }
