@@ -175,7 +175,7 @@ class MapmoViewModel @Inject constructor(
     fun toggleEditMode() {
         _uiState.update {
             it.copy(
-                isEditing = !!it.isEditing,
+                isEditing = !it.isEditing,
             )
         }
     }
