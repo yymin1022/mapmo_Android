@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,9 +36,12 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -70,6 +74,9 @@ fun HomeNormal(
     val mapCameraFocus = uiState.mapCameraFocus
     val mapMarkerList = uiState.mapMarkerList
 
+    // Device Density
+    val density = LocalDensity.current
+
     // Bottom Sheet state
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState()
@@ -81,23 +88,6 @@ fun HomeNormal(
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
-        // FAB for Create New Mapmo
-        floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                onClick = { navigateToMapmo(null) },
-            ) {
-                // Edit Icon (Pencil)
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = null,
-                )
-            }
-        },
-        // Show FAB at bottom right
-        floatingActionButtonPosition = FabPosition.End,
     ) { innerPadding ->
         // Bottom Sheet UI
         // - UI Background: KakaoMap View
@@ -128,14 +118,44 @@ fun HomeNormal(
                 )
             },
         ) { paddingValues ->
-            // Mapmo Map
-            MapmoMap(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                mapCameraFocus = mapCameraFocus,
-                mapMarkerList = mapMarkerList
-            )
+                    .padding(paddingValues)
+            ) {
+                // Mapmo Map
+                MapmoMap(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    mapCameraFocus = mapCameraFocus,
+                    mapMarkerList = mapMarkerList
+                )
+
+                // FAB for Create New Mapmo
+                FloatingActionButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = 16.dp)
+                        .offset {
+                            // Get BottomSheet Height Pixel
+                            val sheetOffset = scaffoldState.bottomSheetState.requireOffset()
+
+                            // FAB Offset = BottomSheet Height - FAB Size
+                            val fabOffset = (sheetOffset - with(density) { 72.dp.toPx() }).toInt()
+                            IntOffset(x = 0, y = fabOffset)
+                        },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = { navigateToMapmo(null) },
+                ) {
+                    // Edit Icon (Pencil)
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = null,
+                    )
+                }
+            }
+
         }
     }
 }
