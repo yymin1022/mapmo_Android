@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -160,7 +161,7 @@ fun MapmoScreen(
                 onLabelChipClick = { viewModel.loadLabelList() },
                 onLabelSelect = { viewModel.selectLabel(it) },
                 onAddLabelClick = { isLabelAddSheetOpen = true },
-                )
+            )
         }
     }
     // Label add bottom sheet — rendered outside Column to overlay the full screen
@@ -201,6 +202,11 @@ private fun MapmoTopBar(
     onSaveClick: () -> Unit,
 ) {
     TopAppBar(
+        modifier = Modifier.height(53.dp),
+        windowInsets = WindowInsets(0.dp),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFF90A4AE).copy(alpha = 0.25f),
+        ),
         title = {
             Text(
                 text = if (isAddMode) "MAPMO 추가" else "MAPMO",
@@ -230,9 +236,6 @@ private fun MapmoTopBar(
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
     )
 }
 
@@ -631,12 +634,20 @@ private fun LabelSelector(
         }
 
         labelList.isEmpty() -> {
-            Text(
-                text = "라벨이 없습니다",
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = Color.Gray,
-                fontSize = META_FONT_SIZE_SP,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "라벨이 없습니다",
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = Color.Gray,
+                    fontSize = META_FONT_SIZE_SP,
+                )
+                // Add button at the end of the label list — same pill shape as chips
+                AddLabelButton(onClick = onAddLabelClick)
+            }
         }
 
         else -> {
