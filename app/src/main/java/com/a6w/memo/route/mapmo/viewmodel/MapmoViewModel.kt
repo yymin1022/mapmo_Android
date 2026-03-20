@@ -294,12 +294,12 @@ class MapmoViewModel @Inject constructor(
             } else {
                 currentMapmo = updatedMapmo
                 // Register to Geofencing Service
-                val mapmoID = updatedMapmo.mapmoID
+                val labelID = updatedMapmo.labelID!!
                 if (updatedMapmo.isNotifyEnabled) {
                     val location = currentLabel!!.location
-                    geofenceRepository.registerGeofence(mapmoID, location)
+                    geofenceRepository.registerGeofence(labelID, location)
                 } else {
-                    geofenceRepository.unregisterGeofence(mapmoID)
+                    geofenceRepository.unregisterGeofence(labelID)
                 }
 
                 _uiState.update {

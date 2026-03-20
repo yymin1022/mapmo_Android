@@ -9,6 +9,8 @@ import com.a6w.memo.common.util.DatetimeUtil
 import com.a6w.memo.domain.model.Label
 import com.a6w.memo.domain.model.Mapmo
 import com.a6w.memo.domain.model.MapmoList
+import com.a6w.memo.domain.repository.GeofenceRepository
+import com.a6w.memo.domain.repository.LabelRepository
 import com.a6w.memo.domain.repository.MapmoListRepository
 import com.a6w.memo.domain.repository.MapmoRepository
 import com.a6w.memo.route.home.ui.model.HomeListUiItem
@@ -27,6 +29,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val mapmoListRepository: MapmoListRepository,
     private val mapmoRepository: MapmoRepository,
+    private val labelRepository: LabelRepository,
+    private val geofenceRepository: GeofenceRepository,
 ): ViewModel() {
     companion object {
         // TODO: User ID must be managed with User Info
@@ -46,14 +50,11 @@ class HomeViewModel @Inject constructor(
      */
     fun loadMapmoList() {
         viewModelScope.launch {
-            // Set UI STate as Loading
-            _uiState.update { HomeUiState.Loading }
-
             // Initialize mapmo list state
-            mapmoList = getMapmoList()
+            val updatedMapmoList = getMapmoList()
 
             // Error handling
-            if(mapmoList == null) {
+            if(updatedMapmoList == null) {
                 // Set ui state as Error and return
                 _uiState.update {
                     HomeUiState.Error(
@@ -62,6 +63,12 @@ class HomeViewModel @Inject constructor(
                 }
                 return@launch
             }
+
+            // If instance is same as prev instance, do nothing
+            if(mapmoList == updatedMapmoList) return@launch
+
+            // Set updated mapmo list
+            mapmoList = updatedMapmoList
 
             // Generate UI Model List
             val dataList = buildList {
@@ -74,6 +81,11 @@ class HomeViewModel @Inject constructor(
 
                     // Each Mapmo Items
                     mapmoGroup.mapmoList.forEach { mapmo ->
+                        if(mapmo.isNotifyEnabled) {
+                            geofenceRepository.unregisterGeofence(labelItem.id)
+                            geofenceRepository.registerGeofence(labelItem.id, labelItem.location)
+                        }
+
                         add(mapmo.toUiItem(labelItem))
                     }
                 }
@@ -166,7 +178,20 @@ class HomeViewModel @Inject constructor(
             _uiState.update { HomeUiState.Loading }
 
             // Toggle mapmo notify enabled state
-            mapmoRepository.toggleNotification(mapmoID, TEST_USER_ID)
+            val updatedMapmo = mapmoRepository.toggleNotification(mapmoID, TEST_USER_ID)
+
+            val labelID = updatedMapmo?.labelID
+            if(labelID != null) {
+                // Register to Geofencing Service
+                val targetLabel = labelRepository.getLabel(labelID, TEST_USER_ID)
+                if (updatedMapmo.isNotifyEnabled) {
+                    val location = targetLabel!!.location
+                    geofenceRepository.registerGeofence(labelID, location)
+                } else {
+                    geofenceRepository.unregisterGeofence(labelID)
+                }
+            }
+
 
             // Reload Mapmo list data
             loadMapmoList()

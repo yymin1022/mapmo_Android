@@ -5,7 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.a6w.memo.domain.repository.BleRepository
 import com.a6w.memo.domain.repository.LabelRepository
-import com.a6w.memo.domain.repository.MapmoRepository
+import com.a6w.memo.domain.repository.MapmoListRepository
 import java.util.UUID
 
 /**
@@ -16,7 +16,7 @@ class MapmoBluetoothWorker(
     context: Context,
     params: WorkerParameters,
     private val labelRepository: LabelRepository,
-    private val mapmoRepository: MapmoRepository,
+    private val mapmoListRepository: MapmoListRepository,
     private val bleRepository: BleRepository
 ) : CoroutineWorker(context, params) {
     companion object {
@@ -29,15 +29,17 @@ class MapmoBluetoothWorker(
     }
 
     override suspend fun doWork(): Result {
-        val mapmoID = inputData.getString(WorkerDefs.KEY_WORKER_INPUT_MEMO_ID) ?: return Result.failure()
+        val labelID = inputData.getString(WorkerDefs.KEY_WORKER_INPUT_LABEL_ID) ?: return Result.failure()
         val userID = inputData.getString(WorkerDefs.KEY_WORKER_INPUT_USER_ID) ?: return Result.failure()
 
         // Get Mapmo / Label Data from repository
-        val targetMapmo = mapmoRepository.getMapmo(mapmoID, userID) ?: return Result.failure()
-        val targetLabel = labelRepository.getLabel(targetMapmo.labelID ?: "", userID) ?: return Result.failure()
+        val targetLabel = labelRepository.getLabel(labelID, userID) ?: return Result.failure()
+        val targetMapmoList = mapmoListRepository.getMapmoList(userID)
+            ?.list?.firstOrNull { it.labelItem?.id == labelID }
+            ?.mapmoList?.filter { it.isNotifyEnabled } ?: return Result.failure()
 
         // Generate Message and encode it
-        val rawMessage = "${targetLabel.name}\n${targetMapmo.title}"
+        val rawMessage = "${targetLabel.name}\n${targetMapmoList.joinToString("\n") { it.title }}"
         val payloadBytes = rawMessage.toByteArray(Charsets.UTF_8)
 
         // Send data to BLE Repository
@@ -48,11 +50,11 @@ class MapmoBluetoothWorker(
             payload = payloadBytes,
         )
 
-        // Try ble sending for 3 times
+        // Try ble sending
         return if(result.isSuccess) {
             Result.success()
         } else {
-            if(runAttemptCount < 3) Result.retry() else Result.failure()
+            Result.failure()
         }
     }
 }

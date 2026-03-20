@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -100,7 +101,7 @@ fun MapmoScreen(
     val editingContent by viewModel.editingContent.collectAsStateWithLifecycle()
     val labelList by viewModel.labelList.collectAsStateWithLifecycle()
     var isLabelAddSheetOpen by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     // Triggers data load once when the screen enters composition.
     LaunchedEffect(Unit) {
@@ -170,6 +171,7 @@ fun MapmoScreen(
     // Label add bottom sheet — rendered outside Column to overlay the full screen
     if (isLabelAddSheetOpen) {
         ModalBottomSheet(
+            modifier = Modifier.fillMaxHeight(0.7f),
             onDismissRequest = { isLabelAddSheetOpen = false },
             sheetState = sheetState,
         ) {
