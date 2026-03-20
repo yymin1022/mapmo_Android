@@ -50,11 +50,11 @@ class MapmoBluetoothWorker(
             payload = payloadBytes,
         )
 
-        // Try ble sending for 3 times
+        // Try ble sending
         return if(result.isSuccess) {
             Result.success()
         } else {
-            if(runAttemptCount < 3) Result.retry() else Result.failure()
+            Result.failure()
         }
     }
 }
